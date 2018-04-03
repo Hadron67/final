@@ -1,0 +1,15 @@
+# miscellaneous files of quartus project
+.qsys_edit/**
+db/**
+incremental_db/**
+output_files/**
+simulation/modelsim/**
+
+# quartus tutorial ** why here?
+quartus_install.pdf
+
+# backup files
+*.bak
+
+# output files
+*.out

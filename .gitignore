@@ -1,0 +1,5 @@
+# contains demo files for ALTERA fpga board
+demo/**
+
+# papers
+docs/**
