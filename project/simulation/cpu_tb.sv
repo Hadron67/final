@@ -1,10 +1,10 @@
 module DummyMem(
+    input wire clk,
     DataBus.slave db,
     input wire res
 );
     logic [31:0] mem[127:0];
     logic [31:0] dataOut, dataIn;
-    wire clk = db.clk;
 
     assign dataIn = db.dataOut;
     assign db.ready = 1'b1; // always be ready
@@ -43,27 +43,35 @@ endmodule
 
 module cpu_tb();
     localparam CNT = 50;
-    logic clk, res;
+    logic clk1, clk, res, clkEnable;
     int count;
     DataBus db();
-
+    IMMU mmuIt();
+    
     CPUCore uut(
         .clk(clk),
         .res(res),
-        .db(db)
+        .db(db),
+        .mmu(mmuIt)
     );
     DummyMem mem(
+        .clk(clk),
         .res(res),
         .db(db)
     );
     initial begin
         clk = 0;
+        clk1 = 0;
         count = 0;
         res = 0;
+        clkEnable = 0;
+
         #10;
         res = 1;
         #10;
         res = 0;
+        #20;
+        clkEnable = 1;
     end
     always begin
         if(count == CNT) begin
@@ -71,7 +79,9 @@ module cpu_tb();
             break;
         end else
             count <= count + 1;
-        clk <= ~clk;
+        clk1 <= ~clk1;
+        if(clkEnable)
+            clk <= clk1;
         #10;
     end
 endmodule

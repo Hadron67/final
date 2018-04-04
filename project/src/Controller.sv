@@ -26,19 +26,18 @@ module Controller(
     output wire regDest,
     output wire extOp,
     output wire writeReg,
-    output wire writeRegSrc,
+    output wire [1:0] writeRegSrc,
     output wire writeMem,
     output wire readMem,
     output wire jmp,
     output wire branch,
-    output wire writeCP0,
-    output wire readCP0
+    output wire writeCP0
 );
     OpCode_t op;
     Func_t func;
     wire [4:0] rs, rt;
     
-    wire load, store, aluToReg;
+    wire load, store, aluToReg, readCP0;
     
     assign func = Func_t'(ins[5:0]);
     assign op = OpCode_t'(ins[31:26]);
@@ -46,29 +45,31 @@ module Controller(
     assign rt = ins[20:16];
 
     assign aluSrcA = ~|op && (func == Func::SLL || func == Func::SRL || func == Func::SRA ) ? 1'b1 : 1'b0;
-    assign aluSrcB = ~|op || op == OpCode::BEQ || op == OpCode::BNE ? 1'b0 : 1'b1; // format I
+    assign aluSrcB = ~|op || op == OpCode::BEQ || op == OpCode::BNE ? 1'b0 : 1'b1; // format R
     assign aluOptr = 
-        op == OpCode::PSOP_I && func == Func::ADD || op == OpCode::ADDI || load || store   ? ALUOptr::PLUS :
-        op == OpCode::PSOP_I && func == Func::ADDU || op == OpCode::ADDIU                  ? ALUOptr::PLUSU :
-        op == OpCode::PSOP_I && func == Func::SUB                                          ? ALUOptr::MINUS :
-        op == OpCode::PSOP_I && func == Func::SUBU                                         ? ALUOptr::MINUSU :
-        op == OpCode::PSOP_I && func == Func::AND || op == OpCode::ANDI                    ? ALUOptr::AND :
-        op == OpCode::PSOP_I && func == Func::MULT                                         ? ALUOptr::TIMES :
-        op == OpCode::PSOP_I && func == Func::MULTU                                        ? ALUOptr::TIMESU :
-        op == OpCode::PSOP_I && func == Func::DIV                                          ? ALUOptr::DIV :
-        op == OpCode::PSOP_I && func == Func::DIVU                                         ? ALUOptr::DIVU :
-        op == OpCode::PSOP_I && func == Func::OR || op == OpCode::ORI                      ? ALUOptr::OR :
-        op == OpCode::PSOP_I && func == Func::XOR || op == OpCode::XORI                    ? ALUOptr::XOR :
-        op == OpCode::PSOP_I && func == Func::NOR                                          ? ALUOptr::NOR :
-        op == OpCode::PSOP_I && func == Func::SLT || op == OpCode::SLTI                    ? ALUOptr::LT :
-        op == OpCode::PSOP_I && func == Func::SLTU || op == OpCode::SLTIU                  ? ALUOptr::LTU :
+        op == OpCode::PSOP_R && func == Func::ADD || op == OpCode::ADDI || load || store   ? ALUOptr::PLUS :
+        op == OpCode::PSOP_R && func == Func::ADDU || op == OpCode::ADDIU                  ? ALUOptr::PLUSU :
+        op == OpCode::PSOP_R && func == Func::SUB                                          ? ALUOptr::MINUS :
+        op == OpCode::PSOP_R && func == Func::SUBU                                         ? ALUOptr::MINUSU :
+        op == OpCode::PSOP_R && func == Func::AND || op == OpCode::ANDI                    ? ALUOptr::AND :
+        op == OpCode::PSOP_R && func == Func::MULT                                         ? ALUOptr::TIMES :
+        op == OpCode::PSOP_R && func == Func::MULTU                                        ? ALUOptr::TIMESU :
+        op == OpCode::PSOP_R && func == Func::DIV                                          ? ALUOptr::DIV :
+        op == OpCode::PSOP_R && func == Func::DIVU                                         ? ALUOptr::DIVU :
+        op == OpCode::PSOP_R && func == Func::OR || op == OpCode::ORI                      ? ALUOptr::OR :
+        op == OpCode::PSOP_R && func == Func::XOR || op == OpCode::XORI                    ? ALUOptr::XOR :
+        op == OpCode::PSOP_R && func == Func::NOR                                          ? ALUOptr::NOR :
+        op == OpCode::PSOP_R && func == Func::SLT || op == OpCode::SLTI                    ? ALUOptr::LT :
+        op == OpCode::PSOP_R && func == Func::SLTU || op == OpCode::SLTIU                  ? ALUOptr::LTU :
         op == OpCode::BEQ                                                                  ? ALUOptr::EQ :
         op == OpCode::BNE                                                                  ? ALUOptr::NE :
         ALUOptr::NONE;
     assign aluOverflow = 
-        op == OpCode::PSOP_I && (func == Func::ADD || func == Func::SUB) ||
+        op == OpCode::PSOP_R && (func == Func::ADD || func == Func::SUB) ||
         op == OpCode::ADDI ? 1'b1 : 1'b0;
-    assign regDest = ~|op ? 1'b0 : 1'b1;// format I
+    assign regDest = 
+        ~|op ? 1'b0 :
+        1'b1;
     assign extOp = 
         op == OpCode::ADDI ||
         op == OpCode::SLTI ||
@@ -97,15 +98,16 @@ module Controller(
         op == OpCode::ORI ||
         op == OpCode::XORI ||
         op == OpCode::LUI ? 1'b1 : 1'b0;
-    assign writeReg = load | store | aluToReg;
+    assign writeReg = load | store | aluToReg | readCP0;
     assign writeRegSrc = 
-        load ? 1'b1 : 
-        aluToReg ? 1'b0 : 
-        1'bx;
+        load ? 2'd1 : 
+        aluToReg ? 2'd0 : 
+        readCP0 ? 2'd2 :
+        2'dx;
     assign writeMem = store ? 1'b1 : 1'b0;
     assign readMem = load ? 1'b1 : 1'b0;
     assign jmp = 
-        op == OpCode::PSOP_I && (func == Func::JR || func == Func::JALR) ||
+        op == OpCode::PSOP_R && (func == Func::JR || func == Func::JALR) ||
         op == OpCode::J ||
         op == OpCode::JAL ? 1'b1 : 1'b0;
     assign branch = 

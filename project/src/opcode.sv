@@ -1,6 +1,6 @@
 package OpCode;
     typedef enum logic [5:0] {
-        PSOP_I    = 6'd0,
+        PSOP_R    = 6'd0,
         PSOP_B    = 6'd1,
         J         = 6'd2,
         JAL       = 6'd3,
