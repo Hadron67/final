@@ -17,9 +17,10 @@ module MMU(
     output wire [31:0] pAddr,
     IMMU.mmu it
 );
-    logic [3 * 32 - 1:0] tlbEntries[63:0];
+    localparam ENTRYHI_MASK = 32'hffffe0ff;// used to set 12-8 bits to zero
+    logic [255:0] tlbEntries[63:0];
     always @(posedge clk) begin
         if(it.writeTlb)
-            tlbEntries[it.index] <= {it.entryHi, it.entryLo0, it.entryLo1};
+            tlbEntries[it.index] <= {ENTRYHI_MASK & it.entryHi, it.entryLo0, it.entryLo1};
     end
 endmodule
