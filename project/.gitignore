@@ -5,6 +5,9 @@ incremental_db/**
 output_files/**
 simulation/modelsim/**
 
+# vvp simulation outputs
+simulation/vvp/**
+
 # quartus tutorial ** why here?
 quartus_install.pdf
 
@@ -13,3 +16,6 @@ quartus_install.pdf
 
 # output files
 *.out
+
+# simulation waveform files
+*.vcd

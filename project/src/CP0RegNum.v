@@ -3,10 +3,10 @@ module CP0RegNum(
     input wire [3:0] sel,
     output wire [5:0] regNum
 );
-    logic [5:0] cp0RegNum;
+    reg [5:0] cp0RegNum;
     assign regNum = cp0RegNum;
 
-    always_comb begin
+    always @* begin
         case(rd)
             0 : cp0RegNum = 6'd0;
             1 : cp0RegNum = 6'd1;
