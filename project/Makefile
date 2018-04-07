@@ -7,7 +7,8 @@ CP0RegNum.v \
 CPU.v \
 InstructionFetcher.v \
 mmu.v \
-CP0Regs.v
+CP0Regs.v \
+RegFile.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 

@@ -1,6 +1,6 @@
 module CP0RegNum(
     input wire [4:0] rd,
-    input wire [3:0] sel,
+    input wire [2:0] sel,
     output wire [5:0] regNum
 );
     reg [5:0] cp0RegNum;

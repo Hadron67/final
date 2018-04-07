@@ -31,13 +31,14 @@ module CPUCore(
     localparam S_INITIAL           = 3'd0;
     localparam S_FETCH_INSTRUCTION = 3'd1;
     localparam S_EXEC              = 3'd2;
-    localparam S_READ_MEM          = 3'd3;
-    localparam S_WRITE_MEM         = 3'd4;
-    localparam S_WRITE_BACK        = 3'd5;
-    localparam S_PAGEFAULT         = 3'd6;
+    localparam S_WRITE_REG         = 3'd3;
+    localparam S_READ_MEM          = 3'd4;
+    localparam S_WRITE_MEM         = 3'd5;
+    localparam S_EXCEPTION         = 3'd6;
 
     integer i;
-    reg [31:0] ins;
+    reg [31:0] insReg;
+    wire [31:0] ins;
     wire [4:0] rs, rt, rd, shamt;
     wire [15:0] imm;
     wire [31:0] aluInA, aluInB, aluOut;
@@ -45,41 +46,31 @@ module CPUCore(
     wire [31:0] dataIn;
     wire overflow, zero;
     reg [31:0] regIn;
-    reg [31:0] cpuRegs[31:0];
+    reg [31:0] mmuRegs[7:0];
 
-    wire aluSrcA;
-    wire aluSrcB;
+    wire aluSrcA, aluSrcB;
     // prepare all the signals according to next state
     reg [2:0] state, nextState;
     wire `ALUOP_T aluOptr;
-    wire aluOverflow;
-    wire regDest;
-    wire extOp;
-    wire writeReg;
+    wire aluOverflow, regDest, extOp, writeReg;
     wire [1:0] writeRegSrc;
     wire writeMem, readMem;
-    wire jmp;
-    wire branch;
-    wire writeCP0;
-    // BranchCondKind_t branchCond;
-    // wire [5:0] op;
+    wire jmp, branch;
+    wire writeCP0, readCP0;
     
     reg [31:0] pc; 
     wire [31:0] nextpc;
     reg [63:0] acc;
-    reg [31:0] cp0Regs[38:0];
-    wire [5:0] cp0RegNum;
-    wire [3:0] sel;
+    wire [2:0] sel;
+    wire [31:0] cp0RegOut;
 
+    assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
     assign rs = ins[25:21];
     assign rt = ins[20:16];
     assign rd = ins[15:11];
     assign shamt = ins[10:6];
     assign imm = ins[15:0];
     assign sel = ins[2:0];
-
-    assign regOutA = rs == 0 ? 32'd0 : cpuRegs[rs];
-    assign regOutB = rt == 0 ? 32'd0 : cpuRegs[rt];
 
     assign db_dataOut = regOutB;
     assign dataIn = db_dataIn;
@@ -97,7 +88,7 @@ module CPUCore(
         case(writeRegSrc)
             0: regIn = aluOut;
             1: regIn = dataIn;
-            2: regIn = cp0Regs[cp0RegNum];
+            2: regIn = cp0RegOut;
             default: regIn = 32'dx;
         endcase
     end
@@ -119,12 +110,7 @@ module CPUCore(
         endcase
     end
     
-    CP0RegNum U20 (
-        .rd(rd),
-        .sel(sel),
-        .regNum(cp0RegNum)
-    );
-    InstructionFetcher U1 (
+    InstructionFetcher insFetcher (
         .branch(branch),
         .jmp(jmp),
         .target(ins[25:0]),
@@ -133,7 +119,7 @@ module CPUCore(
         .nextpc(nextpc),
         .z(zero)
     );
-    Controller U2(
+    Controller ctl(
         .ins(ins),
         .aluSrcA(aluSrcA),
         .aluSrcB(aluSrcB),
@@ -148,9 +134,30 @@ module CPUCore(
         .jmp(jmp),
         .branch(branch),
         // .branchCond(branchCond),
-        .writeCP0(writeCP0)
+        .writeCP0(writeCP0),
+        .readCP0(readCP0)
     );
-    ALU U4 (
+    RegFile regs (
+        .clk(clk),
+        .regA(rs),
+        .regB(rt),
+        .regW(regDest == 0 ? rd : rt),
+        .dataIn(regIn),
+        .outA(regOutA),
+        .outB(regOutB),
+        .we(writeReg && (nextState == S_WRITE_REG || state == S_EXEC && !writeMem && !readMem )),
+        .re(nextState == S_EXEC)
+    );
+    CP0Regs cp0Regs (
+        .clk(clk),
+        .we(writeCP0 && nextState == S_WRITE_REG),
+        .re(readCP0 && nextState == S_EXEC),
+        .rd(rd),
+        .sel(sel),
+        .dataIn(regOutB),
+        .dataOut(cp0RegOut)
+    );
+    ALU alu (
         .optr(aluOptr),
         .overflowTrap(aluOverflow),
         .A(aluSrcA == 0 ? regOutA : shamt),
@@ -165,9 +172,9 @@ module CPUCore(
         case(state)
             S_INITIAL: nextState = S_FETCH_INSTRUCTION;
             S_FETCH_INSTRUCTION: 
-                if(pageFaultIReq)
-                    nextState = S_PAGEFAULT;
-                else if(db_ready)
+                if(pageFaultIReq) begin
+                    nextState = S_EXCEPTION;
+                end else if(db_ready)
                     nextState = S_EXEC;
                 else 
                     nextState = S_FETCH_INSTRUCTION;
@@ -178,11 +185,11 @@ module CPUCore(
                     nextState = S_WRITE_MEM;
                 else
                     nextState = S_FETCH_INSTRUCTION;
-            S_READ_MEM:   nextState = db_ready ? S_WRITE_BACK : S_READ_MEM;
-            S_WRITE_MEM:  nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
-            S_WRITE_BACK: nextState = S_FETCH_INSTRUCTION;
-            // TODO: process page fault
-            S_PAGEFAULT: nextState = S_PAGEFAULT;
+            S_READ_MEM:  nextState = db_ready ? S_WRITE_REG : S_READ_MEM;
+            S_WRITE_MEM: nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
+            S_WRITE_REG: nextState = S_FETCH_INSTRUCTION;
+            // TODO: process exceptions
+            S_EXCEPTION: nextState = S_EXCEPTION;
         endcase
     end
     
@@ -192,23 +199,9 @@ module CPUCore(
             pc <= 0;
         end else begin
             if(state == S_FETCH_INSTRUCTION && nextState == S_EXEC)
-                ins <= dataIn;
+                insReg <= dataIn;
             if(state != S_INITIAL && nextState == S_FETCH_INSTRUCTION)
                 pc <= nextpc;
-            if(state == S_EXEC)
-                $display("executing: %d", ins[31:26]);
-            
-            // register file
-            if(writeReg && (nextState == S_WRITE_BACK || nextState == S_EXEC && !writeMem && !readMem )) begin
-                cpuRegs[regDest == 0 ? rd : rt] <= regIn;
-                $display("written data (%d) to register $%d", regIn, regDest == 0 ? rd : rt);
-            end
-
-            //coprocessor1 registers
-            if(writeCP0) begin
-                cp0Regs[cp0RegNum] <= regOutB;
-                $display("written data (%d) to cp0 register $%d", regOutB, cp0RegNum);
-            end
 
             state <= nextState;
         end

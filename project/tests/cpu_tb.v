@@ -1,5 +1,6 @@
 `include "opcode.vh"
 `include "DataBus.vh"
+`include "font.vh"
 
 module DummyMem(
     input wire clk, res,
@@ -29,7 +30,7 @@ module DummyMem(
                     mem[db_addr[11:2]] <= dataIn;
                 end
                 `MEM_ACCESS_X: begin
-                    $display("execute memory at address %x, data: %x", db_addr, mem[db_addr[11:2]]);
+                    $display(`FONT_YELLOW("execute memory at address %x, data: %x"), db_addr, mem[db_addr[11:2]]);
                     dataOut <= mem[db_addr[11:2]];
                 end
             endcase

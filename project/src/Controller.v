@@ -1,21 +1,5 @@
-// package BranchCondKind;
-//     typedef enum logic [2:0] {
-//         NONE,
-//         LTZ,
-//         GEZ,
-//         GTZ,
-//         EQ,
-//         NE,
-//         LEZ
-//     } BranchCondKind_t;
-// endpackage
 `include "opcode.vh"
 `include "ALUOp.vh"
-
-// import ALUOptr::ALUOptr_t;
-// import `OPCODE_`OPCODE_t;
-// import `FUNC_`FUNC_t;
-// import BranchCondKind::BranchCondKind_t;
 
 module Controller(
     input wire [31:0] ins,
@@ -32,19 +16,21 @@ module Controller(
     output wire readMem,
     output wire jmp,
     output wire branch,
-    output wire writeCP0
+    output wire writeCP0,
+    output wire readCP0
 );
     wire [5:0] op;
     wire [5:0] func;
     wire [4:0] rs, rt;
     
-    wire load, store, aluToReg, readCP0;
+    wire load, store, aluToReg;
     
     assign func = ins[5:0];
     assign op = ins[31:26];
     assign rs = ins[25:21];
     assign rt = ins[20:16];
 
+    // XXX: What a mess! Need a better way to write signals
     assign aluSrcA = ~|op && (func == `FUNC_SLL || func == `FUNC_SRL || func == `FUNC_SRA ) ? 1'b1 : 1'b0;
     assign aluSrcB = ~|op || op == `OPCODE_BEQ || op == `OPCODE_BNE ? 1'b0 : 1'b1; // format R
     assign aluOptr = 
@@ -119,6 +105,5 @@ module Controller(
         op == `OPCODE_BGTZ ? 1'b1 : 1'b0;
     assign readCP0 = op == `OPCODE_COP0 && rs == 0 && ~|ins[10:3];
     assign writeCP0 = op == `OPCODE_COP0 && rs == 4 && ~|ins[10:3];
-
 
 endmodule
