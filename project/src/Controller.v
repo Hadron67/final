@@ -17,7 +17,8 @@ module Controller(
     output wire jmp,
     output wire branch,
     output wire writeCP0,
-    output wire readCP0
+    output wire readCP0,
+    output wire isTlbOp
 );
     wire [5:0] op;
     wire [5:0] func;
@@ -105,5 +106,6 @@ module Controller(
         op == `OPCODE_BGTZ ? 1'b1 : 1'b0;
     assign readCP0 = op == `OPCODE_COP0 && rs == 0 && ~|ins[10:3];
     assign writeCP0 = op == `OPCODE_COP0 && rs == 4 && ~|ins[10:3];
+    assign isTlbOp = op == `OPCODE_COP0 && ins[25] && ~|ins[24:6];
 
 endmodule

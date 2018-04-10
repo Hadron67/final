@@ -28,6 +28,10 @@ module top(
         .db_ready(db_ready)
     );
 
+    MMU m (
+        
+    );
+
     UART_tx #(.DATA_MAX_LEN(DATA_LEN)) usartTx (
         .clk(~clk),
         .res(res),

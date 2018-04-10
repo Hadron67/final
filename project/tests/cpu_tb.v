@@ -82,6 +82,7 @@ module cpu_tb();
         .db_ready(db_ready),
         .db_accessType(db_accessType)
     );
+    MMU m();
     initial begin
         $dumpfile({`OUT_DIR, "/cpu_tb.vcd"}); 
         $dumpvars(0, uut);

@@ -8,7 +8,9 @@ CPU.v \
 InstructionFetcher.v \
 mmu.v \
 CP0Regs.v \
-RegFile.v
+RegFile.v \
+random32.v \
+encoder.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 
@@ -19,16 +21,26 @@ VVP=vvp -n
 SIM_SOURCE_DIR=tests
 SIM_OUTDIR=simulation/vvp
 
-all: cpu_sim
+SIM_TARGETS=\
+cpu \
+mmu \
+encoder
 
-%_sim: %_tb
-	$(VVP) $(SIM_OUTDIR)/$<.out
+default:
+	@echo "You must specify what to run." && exit 1;
 
-%_tb: $(SOURCE) $(SIM_SOURCE_DIR)/%_tb.v
-	$(IV) -o $(SIM_OUTDIR)/$@.out -s $@ -I $(INC_DIR) -DOUT_DIR=\"$(SIM_OUTDIR)\" $(SOURCE) $(SIM_SOURCE_DIR)/$@.v
+all: $(SIM_TARGETS:%=%_sim)
 
-%_sim_clean:
-	$(RM) $(@:%_sim_clean=%_tb).out $(@:%_sim_clean=%_tb).vcd
+%_sim: $(SIM_OUTDIR)/%_tb.out
+	$(VVP) $<
 
+$(SIM_OUTDIR)/%_tb.out: $(SOURCE) $(SIM_SOURCE_DIR)/%_tb.v
+	$(IV) -o $@ -s $(@:$(SIM_OUTDIR)/%.out=%) -I $(INC_DIR) -DOUT_DIR=\"$(SIM_OUTDIR)\" $(SOURCE) $(@:$(SIM_OUTDIR)/%.out=$(SIM_SOURCE_DIR)/%.v)
+
+.SECONDARY: $(SIM_TARGETS:%=$(SIM_OUTDIR)/%_tb.out)
+.PHONY: clean sandwitch default
 clean:
 	$(RM) $(SIM_OUTDIR)/*
+
+sandwitch:
+	@[ "`whoami`" = "root" ] && echo "Okay." || echo "What? Make it yourself."

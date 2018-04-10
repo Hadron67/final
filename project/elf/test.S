@@ -1,4 +1,5 @@
 .text
+__runTest:
     # addi    $t0, $zero, 64
     la    $t0, v1  
     lw    $t1, 0($t0)
@@ -11,10 +12,15 @@
     sw    $t0, 12($t0)        # 
 target:
     sw    $t1, 12($t0)        # 
-
-.data
-    v1: .word 4
-    v2: .word 5
-    v3: .word 9
-    hkm: .word 23
-    soor: .asciiz "统统锁尔"
+    mfc0  $t2, $9
+v1: 
+    .word 4
+v2: 
+    .word 5
+v3: 
+    .word 9
+hkm: 
+    .word 23
+soor: 
+    .asciiz "统统锁尔"
+    sw    $t1, 12($t0) 
