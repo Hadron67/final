@@ -1,7 +1,7 @@
 `include "opcode.vh"
 `include "DataBus.vh"
 `include "font.vh"
-
+`timescale 1ns/1ns
 module DummyMem(
     input wire clk, res,
     input wire [31:0] db_dataOut, db_addr,
@@ -48,6 +48,7 @@ module DummyMem(
         mem[5] = 32'b000100_00010_00011_0000000000000001;  //beq $2,$3,1
         mem[6] = 32'b101011_00001_00000_0000000000001100;  //sw $0,12($1)
         mem[7] = 32'b101011_00001_00010_0000000000001100;  //sw $2,12($1)
+        mem[8] = ~32'b0;
 
         mem[16] = 32'd4;
         mem[17] = 32'd5;
@@ -59,14 +60,16 @@ module cpu_tb();
     localparam CNT = 50;
     reg clk1, clk, res, clkEnable;
     integer count;
+    wire hlt;
 
     wire [31:0] db_dataIn, db_dataOut, db_addr; 
-    wire [1:0] db_accessType;
+    wire `MEM_ACCESS_T db_accessType;
     wire db_ready;
     
     CPUCore uut(
         .clk(clk),
         .res(res),
+        .hlt(hlt),
         .db_dataIn(db_dataIn),
         .db_dataOut(db_dataOut),
         .db_addr(db_addr),
@@ -101,11 +104,11 @@ module cpu_tb();
         clkEnable = 1;
     end
     always begin
-        if(count == CNT) begin
+        if(hlt) begin
+            $display(`FONT_GREEN("Last instruction reached, exit."));
             $dumpflush();
             $stop();
-        end else
-            count <= count + 1;
+        end 
         clk1 <= ~clk1;
         if(clkEnable)
             clk <= clk1;

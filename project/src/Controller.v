@@ -4,6 +4,7 @@
 module Controller(
     input wire [31:0] ins,
     
+    output wire isLastIns,
     output wire aluSrcA,
     output wire aluSrcB,
     output wire `ALUOP_T aluOptr,
@@ -31,6 +32,7 @@ module Controller(
     assign rs = ins[25:21];
     assign rt = ins[20:16];
 
+    assign isLastIns = &ins;
     // XXX: What a mess! Need a better way to write signals
     assign aluSrcA = ~|op && (func == `FUNC_SLL || func == `FUNC_SRL || func == `FUNC_SRA ) ? 1'b1 : 1'b0;
     assign aluSrcB = ~|op || op == `OPCODE_BEQ || op == `OPCODE_BNE ? 1'b0 : 1'b1; // format R
@@ -86,7 +88,7 @@ module Controller(
         op == `OPCODE_ORI ||
         op == `OPCODE_XORI ||
         op == `OPCODE_LUI ? 1'b1 : 1'b0;
-    assign writeReg = load | store | aluToReg | readCP0;
+    assign writeReg = load | aluToReg | readCP0;
     assign writeRegSrc = 
         load ? 2'd1 : 
         aluToReg ? 2'd0 : 

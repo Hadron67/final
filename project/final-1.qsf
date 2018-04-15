@@ -86,6 +86,7 @@ set_global_assignment -name EDA_TEST_BENCH_NAME cpu_tb -section_id eda_simulatio
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id cpu_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME cpu_tb -section_id cpu_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE simulation/cpu_tb.sv -section_id cpu_tb
+set_global_assignment -name VERILOG_FILE src/encoder.v
 set_global_assignment -name VERILOG_FILE src/RegFile.v
 set_global_assignment -name VERILOG_FILE src/CP0Regs.v
 set_global_assignment -name VERILOG_FILE src/Serial.v

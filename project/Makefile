@@ -10,7 +10,8 @@ mmu.v \
 CP0Regs.v \
 RegFile.v \
 random32.v \
-encoder.v
+encoder.v \
+MipsCPU.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 

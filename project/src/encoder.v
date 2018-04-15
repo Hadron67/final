@@ -17,7 +17,7 @@ module Encoder #(
     generate
         for(i = OUT_WIDTH - 1; i >= 0; i = i - 1) begin: genLogic
             wire [IN_WIDTH - 1:0] line = ors[i];
-            wire [IN_WIDTH/2 - 1:0] origLine = line[2 * (1 << i) - 1:1 << i];
+            wire [(1 << i) - 1:0] origLine = line[2 * (1 << i) - 1:1 << i];
             assign out[i] = |origLine;
             if(i > 0) begin
                 assign ors[i - 1][(1 << i) - 1:0] = out[i] ? origLine : line[(1 << i) - 1:0];

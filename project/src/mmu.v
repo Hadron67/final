@@ -2,31 +2,30 @@
 module MMU #(
     parameter ENTRY_ADDR_WIDTH = 3
 ) (
-    input  wire clk, res,
-    input  wire addrValid,
-    input  wire [31:0] vAddrIn,
+    input wire clk, res,
+    input wire addrValid,
+    input wire [31:0] vAddrIn,
     output wire [31:0] pAddrOut,
-    output wire        ready,
+    output wire ready,
 
-    input  wire [31:0]   mmu_index,
-                         mmu_random,
-                         mmu_entryLo0,
-                         mmu_entryLo1,
-                         mmu_ctx,
-                         mmu_pageMask,
-                         mmu_wired,
-                         mmu_entryHi,
-    input  wire `TLBOP_T mmu_cmd,
-    input wire           mmu_cmdValid,
-    output wire [31:0]   matchedIndex,
-
-    output wire          mmu_tlbMiss,
-                         mmu_tlbModified,
-                         mmu_tlbInvalid
+    input wire `MMU_REG_T mmu_reg,
+    input wire [31:0] mmu_dataIn,
+    output reg [31:0] mmu_dataOut,
+    input wire `MMU_CMD_T mmu_cmd,
+    output wire mmu_tlbMiss, mmu_tlbModified, mmu_tlbInvalid
 );
     localparam ENTRY_COUNT = 1 << ENTRY_ADDR_WIDTH;
     localparam PAGEMASK_MASK = 32'hffffe0ff;// used to set 12-8 bits to zero
     localparam ENTRYHI_MASK  = 32'h1fffe000;
+
+    reg [31:0] reg_index;
+    reg [31:0] reg_random;
+    reg [31:0] reg_entryLo0;
+    reg [31:0] reg_entryLo1;
+    reg [31:0] reg_ctx;
+    reg [31:0] reg_pageMask;
+    reg [31:0] reg_wired;
+    reg [31:0] reg_entryHi;
 
     wire vaSrc;
     wire [31:0] vAddr;
@@ -41,8 +40,9 @@ module MMU #(
     wire [31:0] tlbRead_entryLo0;
     wire [31:0] tlbRead_entryLo1;
     wire [31:0] tlbRead_pageMask;
+    wire [15:0] mask;
     wire [7:0] asid;
-    wire found;
+    wire [31:0] matchedIndex;
     reg matchedEvenOddBit;
     reg [3:0] matchedPageMaskKind;
     reg [31:0] tlbWriteIndex;
@@ -56,49 +56,69 @@ module MMU #(
     assign tlbRead_entryLo0 = tlb_entryLo0[tlbReadIndex];
     assign tlbRead_entryLo1 = tlb_entryLo1[tlbReadIndex];
     assign tlbRead_pageMask = tlb_pageMask[tlbReadIndex];
+    assign mask = tlbRead_pageMask[28:13];
     assign selectedEntryLo = matchedEvenOddBit ? tlbRead_entryLo1 : tlbRead_entryLo0;
-    assign vaSrc = mmu_cmd == `TLBOP_TLBP ? 1'b1 : 1'b0;
-    assign vAddr = vaSrc ? vAddrIn : {mmu_entryHi[31:13], {14{1'b0}}};
-    assign asid = mmu_entryHi[7:0];
-    assign found = |matched;
-    assign mmu_tlbMiss = ~found;
+    assign vaSrc = mmu_cmd == `MMU_CMD_PROB_TLB ? 1'b1 : 1'b0;
+    assign vAddr = vaSrc ? vAddrIn : {reg_entryHi[31:13], {12{1'b0}}};
+    assign asid = reg_entryHi[7:0];
+    assign mmu_tlbMiss = ~|matched;
 
-    assign writeTlb = mmu_cmdValid && (mmu_cmd == `TLBOP_TLBWR || mmu_cmd == `TLBOP_TLBWI);
-    assign tlbReadIndex = addrValid ? matchedIndex : mmu_index;
+    assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
+    assign tlbReadIndex = addrValid ? matchedIndex : reg_index;
 
     assign pAddrOut = pAddr;
 
     always @* begin
         case(mmu_cmd)
-            `TLBOP_TLBWR: tlbWriteIndex = mmu_random;
-            `TLBOP_TLBWI: tlbWriteIndex = mmu_index;
+            `MMU_CMD_WRITE_TLB_RANDOM: tlbWriteIndex = reg_random;
+            `MMU_CMD_WRITE_TLB:        tlbWriteIndex = reg_index;
             default: tlbWriteIndex = 32'dx;
         endcase
     end
 
-    always @* begin
-        case(tlbRead_pageMask[28:13])
-            16'b0000_0000_0000_0000: matchedPageMaskKind = 4'd0; // 4KB
-            16'b0000_0000_0000_0011: matchedPageMaskKind = 4'd1; // 16KB
-            16'b0000_0000_0000_11xx: matchedPageMaskKind = 4'd2; // 64KB
-            16'b0000_0000_0011_xxxx: matchedPageMaskKind = 4'd3; // 256KB
-            16'b0000_0000_11xx_xxxx: matchedPageMaskKind = 4'd4; // 1MB
-            16'b0000_0011_xxxx_xxxx: matchedPageMaskKind = 4'd5; // 4MB
-            16'b0000_11xx_xxxx_xxxx: matchedPageMaskKind = 4'd6; // 16MB
-            16'b0011_xxxx_xxxx_xxxx: matchedPageMaskKind = 4'd7; // 64MB
-            16'b11xx_xxxx_xxxx_xxxx: matchedPageMaskKind = 4'd8; // 256MB
-            default:                 matchedPageMaskKind = 4'dx;
-        endcase
+    always @* begin: maskConverter
+        if(~|mask)
+            matchedPageMaskKind = 4'd0;
+        else if(~|mask[15:2] && &mask[1:0])
+            matchedPageMaskKind = 4'd1;
+        else if(~|mask[15:4] && &mask[3:2])
+            matchedPageMaskKind = 4'd2;
+        else if(~|mask[15:6] && &mask[5:4])
+            matchedPageMaskKind = 4'd3;
+        else if(~|mask[15:8] && &mask[7:6])
+            matchedPageMaskKind = 4'd4;
+        else if(~|mask[15:10] && &mask[9:8])
+            matchedPageMaskKind = 4'd5;
+        else if(~|mask[15:12] && &mask[11:10])
+            matchedPageMaskKind = 4'd6;
+        else if(~|mask[15:14] && &mask[13:12])
+            matchedPageMaskKind = 4'd7;
+        else if(&mask[15:14])
+            matchedPageMaskKind = 4'd8;
+        else
+            matchedPageMaskKind = 4'dx; 
+        // case(tlbRead_pageMask[28:13])
+        //     16'b0000_0000_0000_0000: matchedPageMaskKind = 4'd0; // 4KB
+        //     16'b0000_0000_0000_0011: matchedPageMaskKind = 4'd1; // 16KB
+        //     16'b0000_0000_0000_11xx: matchedPageMaskKind = 4'd2; // 64KB
+        //     16'b0000_0000_0011_xxxx: matchedPageMaskKind = 4'd3; // 256KB
+        //     16'b0000_0000_11xx_xxxx: matchedPageMaskKind = 4'd4; // 1MB
+        //     16'b0000_0011_xxxx_xxxx: matchedPageMaskKind = 4'd5; // 4MB
+        //     16'b0000_11xx_xxxx_xxxx: matchedPageMaskKind = 4'd6; // 16MB
+        //     16'b0011_xxxx_xxxx_xxxx: matchedPageMaskKind = 4'd7; // 64MB
+        //     16'b11xx_xxxx_xxxx_xxxx: matchedPageMaskKind = 4'd8; // 256MB
+        //     default:                 matchedPageMaskKind = 4'dx;
+        // endcase
     end
 
     always @* begin
         case(matchedPageMaskKind)
-            4'd0: matchedEvenOddBit = vAddrIn[12]; 
+            4'd0: matchedEvenOddBit = vAddrIn[12];
             4'd1: matchedEvenOddBit = vAddrIn[14];
             4'd2: matchedEvenOddBit = vAddrIn[16];
-            4'd3: matchedEvenOddBit = vAddrIn[18]; 
-            4'd4: matchedEvenOddBit = vAddrIn[20]; 
-            4'd5: matchedEvenOddBit = vAddrIn[22]; 
+            4'd3: matchedEvenOddBit = vAddrIn[18];
+            4'd4: matchedEvenOddBit = vAddrIn[20];
+            4'd5: matchedEvenOddBit = vAddrIn[22];
             4'd6: matchedEvenOddBit = vAddrIn[24];
             4'd7: matchedEvenOddBit = vAddrIn[26];
             4'd8: matchedEvenOddBit = vAddrIn[28];
@@ -132,7 +152,7 @@ module MMU #(
             wire [18:0] vpn2 = vAddr[31:13];
             wire g = entryLo0[0] & entryLo1[0];
 
-            assign matched[i] = tlb_vpn2 & ~mask == vpn2 & ~mask && (g || mmu_entryHi[7:0] == entryHi[7:0]);
+            assign matched[i] = tlb_vpn2 & ~mask == vpn2 & ~mask && (g || reg_entryHi[7:0] == entryHi[7:0]);
         end
     endgenerate
 
@@ -141,13 +161,92 @@ module MMU #(
         .out(matchedIndex)
     );
 
-    always @(posedge clk) begin
+    always @(posedge clk) begin: tlbWrite
         if(writeTlb) begin
-            tlb_pageMask[tlbWriteIndex] <= mmu_pageMask;
-            tlb_entryHi [tlbWriteIndex] <= mmu_entryHi;
-            tlb_entryLo0[tlbWriteIndex] <= mmu_entryLo0;
-            tlb_entryLo1[tlbWriteIndex] <= mmu_entryLo1;
+            tlb_pageMask[tlbWriteIndex] <= reg_pageMask;
+            tlb_entryHi [tlbWriteIndex] <= reg_entryHi;
+            tlb_entryLo0[tlbWriteIndex] <= reg_entryLo0;
+            tlb_entryLo1[tlbWriteIndex] <= reg_entryLo1;
             $display("written TLB entry $%d", tlbWriteIndex);
         end
+    end
+
+    always @(posedge clk) begin
+        if(addrValid) begin
+            pAddrOut <= pAddr;
+        end
+    end
+
+    always @(posedge clk) begin: registerReadWrite
+        if(mmu_cmd == `MMU_CMD_WRITE_REG)
+            case(mmu_reg)
+                `MMU_REG_INDEX: begin
+                    reg_index <= mmu_dataIn;
+                    $display("written mmu 'Index' register with data %x", mmu_dataIn);
+                end
+                `MMU_REG_RANDOM: begin
+                    reg_random <= mmu_dataIn;
+                    $display("written mmu 'Random' register with data %x", mmu_dataIn);
+                end 
+                `MMU_REG_ENTRYLO0: begin
+                    reg_entryLo0 <= mmu_dataIn;
+                    $display("written mmu 'EntryLo0' register with data %x", mmu_dataIn);
+                end 
+                `MMU_REG_ENTRYLO1: begin
+                    reg_entryLo1 <= mmu_dataIn;
+                    $display("written mmu 'EntryL01' register with data %x", mmu_dataIn);
+                end 
+                `MMU_REG_CTX: begin
+                    reg_ctx <= mmu_dataIn;
+                    $display("written mmu 'Context' register with data %x", mmu_dataIn);
+                end 
+                `MMU_REG_PAGEMASK: begin
+                    reg_pageMask <= mmu_dataIn;
+                    $display("written mmu 'PageMask' register with data %x", mmu_dataIn);
+                end 
+                `MMU_REG_WIRED: begin
+                    reg_wired <= mmu_dataIn;
+                    $display("written mmu 'Wired' register with data %x", mmu_dataIn);
+                end 
+                `MMU_REG_ENTRYHI: begin
+                    reg_entryHi <= mmu_dataIn;
+                    $display("written mmu 'EntryHi' register with data %x", mmu_dataIn);
+                end 
+            endcase
+        else if(mmu_cmd == `MMU_CMD_READ_REG)
+            case(mmu_reg)
+                `MMU_REG_INDEX: begin
+                    mmu_dataOut <= reg_index;
+                    $display("read mmu 'Index' register, data %x", reg_index);
+                end 
+                `MMU_REG_RANDOM: begin
+                    mmu_dataOut <= reg_random;
+                    $display("read mmu 'Random' register, data %x", reg_random);
+                end 
+                `MMU_REG_ENTRYLO0: begin
+                    mmu_dataOut <= reg_entryLo0;
+                    $display("read mmu 'EntryLo0' register, data %x", reg_entryLo0);
+                end 
+                `MMU_REG_ENTRYLO1: begin
+                    mmu_dataOut <= reg_entryLo1;
+                    $display("read mmu 'EntryLo1' register, data %x", reg_entryLo1);
+                end 
+                `MMU_REG_CTX: begin
+                    mmu_dataOut <= reg_ctx;
+                    $display("read mmu 'Context' register, data %x", reg_ctx);
+                end 
+                `MMU_REG_PAGEMASK: begin
+                    mmu_dataOut <= reg_pageMask;
+                    $display("read mmu 'PageMask' register, data %x", reg_pageMask);
+                end 
+                `MMU_REG_WIRED: begin
+                    mmu_dataOut <= reg_wired;
+                    $display("read mmu 'Wired' register, data %x", reg_wired);
+                end 
+                `MMU_REG_ENTRYHI: begin
+                    mmu_dataOut <= reg_entryHi;
+                    $display("read mmu 'EntryHi' register, data %x", reg_entryHi);
+                end 
+            endcase
     end
 endmodule

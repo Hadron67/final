@@ -58,4 +58,12 @@
 `define FUNC_SLT   6'd42
 `define FUNC_SLTU  6'd43
 
+`define TLBOP_NONE     6'd0
+`define TLBOP_TLBINV   6'd3
+`define TLBOP_TLBINVF  6'd4
+`define TLBOP_TLBP     6'd8
+`define TLBOP_TLBR     6'd1
+`define TLBOP_TLBWR    6'd6
+`define TLBOP_TLBWI    6'd2
+
 `endif

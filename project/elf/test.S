@@ -13,6 +13,8 @@ __runTest:
 target:
     sw    $t1, 12($t0)        # 
     mfc0  $t2, $9
+    move  $t3, $t2
+    .data
 v1: 
     .word 4
 v2: 

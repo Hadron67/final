@@ -7,38 +7,30 @@
 `include "mmu.vh"
 
 module CPUCore(
-    input  wire        clk,
-    input  wire        res,
-    input  wire        pageFaultIReq,
+    input wire clk,
+    input wire res,
+    input wire pageFaultIReq,
+    output wire hlt,
     
-    input  wire [31:0] db_dataIn,
-    input  wire        db_ready,
+    input wire [31:0] db_dataIn,
+    input wire db_ready,
     output wire [31:0] db_dataOut,
-    output reg  [31:0] db_addr,
-    output reg  [1:0]  db_accessType,
+    output reg [31:0] db_addr,
+    output reg `MEM_ACCESS_T db_accessType,
 
-    output reg  [31:0]   mmu_index, 
-                         mmu_random, 
-                         mmu_entryLo0, 
-                         mmu_entryLo1, 
-                         mmu_ctx, 
-                         mmu_pageMask, 
-                         mmu_wired, 
-                         mmu_entryHi,
-    output wire `TLBOP_T mmu_cmd,
-    output wire          mmu_cmdValid,
-    input  wire          mmu_tlbMiss, 
-                         mmu_tlbModified, 
-                         mmu_tlbInvalid
+    output wire `MMU_REG_T mmu_reg,
+    output wire [31:0] mmu_dataIn,
+    input wire [31:0] mmu_dataOut,
+    output reg `MMU_CMD_T mmu_cmd,
+    input wire mmu_tlbMiss, mmu_tlbModified, mmu_tlbInvalid
 );
     localparam S_INITIAL           = 4'd0;
     localparam S_FETCH_INSTRUCTION = 4'd1;
     localparam S_EXEC              = 4'd2;
-    localparam S_WRITE_REG         = 4'd3;
     localparam S_READ_MEM          = 4'd4;
     localparam S_WRITE_MEM         = 4'd5;
     localparam S_EXCEPTION         = 4'd6;
-    localparam S_REFRESH_MMU_REGS  = 4'd7;
+    localparam S_HLT               = 4'd7;
 
     integer i;
     reg [31:0] insReg;
@@ -48,11 +40,10 @@ module CPUCore(
     wire [31:0] aluInA, aluInB, aluOut;
     wire [31:0] regOutA, regOutB;
     wire [31:0] dataIn;
-    wire `TLBOP_T tlbOp;
     wire overflow, zero;
     reg [31:0] regIn;
-    reg [4:0] mmuRegCnt;
 
+    wire isLastIns;
     wire aluSrcA, aluSrcB;
     // prepare all the signals according to next state
     reg [3:0] state, nextState;
@@ -67,10 +58,12 @@ module CPUCore(
     reg [31:0] pc; 
     wire [31:0] nextpc;
     reg [63:0] acc;
-    reg [4:0] cp0rd;
-    reg [2:0] sel;
+    wire [7:0] cp0RegDesc;
     wire [31:0] cp0RegOut;
+    wire [5:0] tlbOp;
+    wire readMMUReg, writeMMUReg;
 
+    assign hlt = nextState == S_HLT;
     assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
     assign rs = ins[25:21];
     assign rt = ins[20:16];
@@ -78,13 +71,11 @@ module CPUCore(
     assign shamt = ins[10:6];
     assign imm = ins[15:0];
     assign tlbOp = ins[5:0];
+    assign cp0RegDesc = {rd, ins[2:0]};
 
     assign db_dataOut = regOutB;
     assign dataIn = db_dataIn;
 
-    assign mmu_cmd = ins[5:0];
-    assign mmu_cmdValid = state == S_EXEC && isTlbOp;
-    
     // multiplexer for registers input
     always @* begin
         case(writeRegSrc)
@@ -114,26 +105,23 @@ module CPUCore(
         endcase
     end
     always @* begin
-        if(nextState == S_REFRESH_MMU_REGS) begin
-            sel = 3'd0;
-            if(state == S_FETCH_INSTRUCTION)
-                cp0rd = 5'd0;
-            else
-                case(mmuRegCnt)
-                    5'd0: cp0rd = 5'd0;
-                    5'd1: cp0rd = 5'd1;
-                    5'd2: cp0rd = 5'd2;
-                    5'd3: cp0rd = 5'd3;
-                    5'd4: cp0rd = 5'd4;
-                    5'd5: cp0rd = 5'd5;
-                    5'd6: cp0rd = 5'd6;
-                    5'd7: cp0rd = 5'd10;
-                    default: cp0rd = 5'dx;
-                endcase
-        end else begin
-            cp0rd = ins[15:11];
-            sel = ins[2:0];
-        end
+        if(isTlbOp && nextState == S_FETCH_INSTRUCTION) begin
+            case(tlbOp)
+                // `TLBOP_TLBINV: 
+                // `TLBOP_TLBINVF:
+                `TLBOP_TLBP:  mmu_cmd = `MMU_CMD_PROB_TLB;
+                `TLBOP_TLBR:  mmu_cmd = `MMU_CMD_READ_TLB;
+                `TLBOP_TLBWR: mmu_cmd = `MMU_CMD_WRITE_TLB_RANDOM;
+                `TLBOP_TLBWI: mmu_cmd = `MMU_CMD_WRITE_TLB;
+                default:      mmu_cmd = `MMU_CMD_NONE;
+            endcase
+        end 
+        else if(writeMMUReg)
+            mmu_cmd = `MMU_CMD_WRITE_REG;
+        else if(readMMUReg)
+            mmu_cmd = `MMU_CMD_READ_REG;
+        else
+            mmu_cmd = `MMU_CMD_NONE;
     end
     
     InstructionFetcher insFetcher (
@@ -147,6 +135,7 @@ module CPUCore(
     );
     Controller ctl(
         .ins(ins),
+        .isLastIns(isLastIns),
         .aluSrcA(aluSrcA),
         .aluSrcB(aluSrcB),
         .aluOptr(aluOptr),
@@ -159,7 +148,6 @@ module CPUCore(
         .readMem(readMem),
         .jmp(jmp),
         .branch(branch),
-        // .branchCond(branchCond),
         .writeCP0(writeCP0),
         .readCP0(readCP0),
         .isTlbOp(isTlbOp)
@@ -172,17 +160,23 @@ module CPUCore(
         .dataIn(regIn),
         .outA(regOutA),
         .outB(regOutB),
-        .we(writeReg && (nextState == S_WRITE_REG || state == S_EXEC && !writeMem && !readMem )),
-        .re(state == S_FETCH_INSTRUCTION && nextState == S_EXEC)
+        .we(writeReg && nextState == S_FETCH_INSTRUCTION),
+        .re(!readCP0 && state == S_FETCH_INSTRUCTION && nextState == S_EXEC)
     );
     CP0Regs cp0Regs (
         .clk(clk),
-        .we(writeCP0 && nextState == S_WRITE_REG),
-        .re(readCP0 && nextState == S_EXEC || nextState == S_REFRESH_MMU_REGS),
-        .rd(cp0rd),
-        .sel(sel),
+        .we(writeCP0 && nextState == S_FETCH_INSTRUCTION),
+        .re(readCP0 && nextState == S_EXEC),
+        .rd(cp0RegDesc[7:3]),
+        .sel(cp0RegDesc[2:0]),
         .dataIn(regOutB),
-        .dataOut(cp0RegOut)
+        .dataOut(cp0RegOut),
+
+        .mmu_dataOut(mmu_dataOut),
+        .mmu_dataIn(mmu_dataIn),
+        .mmu_reg(mmu_reg),
+        .readMMUReg(readMMUReg),
+        .writeMMUReg(writeMMUReg)
     );
     ALU alu (
         .optr(aluOptr),
@@ -195,15 +189,18 @@ module CPUCore(
     );
 
     // combinational logic to get next state to go.
-    always @* begin
+    always @* begin: getNextState
         case(state)
             S_INITIAL: nextState = S_FETCH_INSTRUCTION;
             S_FETCH_INSTRUCTION: 
                 if(pageFaultIReq) begin
                     nextState = S_EXCEPTION;
-                end else if(db_ready)
+                end 
+                else if(db_ready)
                     if(isTlbOp)
-                        nextState = S_REFRESH_MMU_REGS;
+                        nextState = S_FETCH_INSTRUCTION;
+                    else if(isLastIns)
+                        nextState = S_HLT;
                     else
                         nextState = S_EXEC;
                 else 
@@ -215,11 +212,9 @@ module CPUCore(
                     nextState = S_WRITE_MEM;
                 else
                     nextState = S_FETCH_INSTRUCTION;
-            S_READ_MEM:  nextState = db_ready ? S_WRITE_REG : S_READ_MEM;
+            S_READ_MEM:  nextState = db_ready ? S_FETCH_INSTRUCTION : S_READ_MEM;
             S_WRITE_MEM: nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
-            S_WRITE_REG: nextState = S_FETCH_INSTRUCTION;
-            S_REFRESH_MMU_REGS: 
-                nextState = mmuRegCnt == 5'd8 ? S_EXEC : S_REFRESH_MMU_REGS;
+            S_HLT: nextState = S_HLT;
             // TODO: process exceptions
             S_EXCEPTION: nextState = S_EXCEPTION;
         endcase
@@ -230,33 +225,13 @@ module CPUCore(
         if(res) begin
             state <= S_INITIAL;
             pc <= 0;
-        end else begin
+        end 
+        else begin
             if(state == S_FETCH_INSTRUCTION && db_ready)
                 insReg <= dataIn;
             if(state != S_INITIAL && nextState == S_FETCH_INSTRUCTION)
                 pc <= nextpc;
             state <= nextState;
         end
-    end
-
-    // mmu registers refreshing
-    always @(posedge clk) begin
-        if(nextState == S_REFRESH_MMU_REGS) begin
-            if(state == S_FETCH_INSTRUCTION)
-                mmuRegCnt <= 5'd1;
-            else begin
-                mmuRegCnt <= mmuRegCnt + 5'd1;
-                case(mmuRegCnt)
-                    5'd1: mmu_index    <= cp0RegOut;
-                    5'd2: mmu_random   <= cp0RegOut;
-                    5'd3: mmu_entryLo0 <= cp0RegOut;
-                    5'd4: mmu_entryLo1 <= cp0RegOut;
-                    5'd5: mmu_ctx      <= cp0RegOut;
-                    5'd6: mmu_pageMask <= cp0RegOut;
-                    5'd7: mmu_wired    <= cp0RegOut;
-                endcase
-            end
-        end else if(state == S_REFRESH_MMU_REGS && nextState == S_EXEC)
-            mmu_entryHi <= cp0RegOut;
     end
 endmodule // CPU
