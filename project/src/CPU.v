@@ -22,7 +22,7 @@ module CPUCore(
     output wire [31:0] mmu_dataIn,
     input wire [31:0] mmu_dataOut,
     output reg `MMU_CMD_T mmu_cmd,
-    input wire mmu_tlbMiss, mmu_tlbModified, mmu_tlbInvalid
+    input wire `MMU_EXCEPTION_T mmu_exception
 );
     localparam S_INITIAL           = 4'd0;
     localparam S_FETCH_INSTRUCTION = 4'd1;

@@ -24,4 +24,11 @@
 
 `define MMU_CMD_T [3:0]
 
+`define MMU_EXCEPTION_NONE        3'd0
+`define MMU_EXCEPTION_TLBMISS     3'd1
+`define MMU_EXCEPTION_TLBINVALID  3'd2
+`define MMU_EXCEPTION_TLBMODIFIED 3'd3
+
+`define MMU_EXCEPTION_T [2:0]
+
 `endif

@@ -1,18 +1,20 @@
+`include "DataBus.vh"
 `include "mmu.vh"
+
 module MMU #(
     parameter ENTRY_ADDR_WIDTH = 3
 ) (
     input wire clk, res,
     input wire addrValid,
     input wire [31:0] vAddrIn,
-    output wire [31:0] pAddrOut,
-    output wire ready,
+    output reg [31:0] pAddrOut,
 
     input wire `MMU_REG_T mmu_reg,
+    input wire `MEM_ACCESS_T mmu_accessType,
     input wire [31:0] mmu_dataIn,
     output reg [31:0] mmu_dataOut,
     input wire `MMU_CMD_T mmu_cmd,
-    output wire mmu_tlbMiss, mmu_tlbModified, mmu_tlbInvalid
+    output reg `MMU_EXCEPTION_T mmu_exception
 );
     localparam ENTRY_COUNT = 1 << ENTRY_ADDR_WIDTH;
     localparam PAGEMASK_MASK = 32'hffffe0ff;// used to set 12-8 bits to zero
@@ -47,6 +49,7 @@ module MMU #(
     reg [3:0] matchedPageMaskKind;
     reg [31:0] tlbWriteIndex;
     wire [31:0] tlbReadIndex;
+    reg `MMU_EXCEPTION_T exceptionReg;
     // TLB lookup temprory variables
     wire [ENTRY_COUNT - 1:0] matched;
 
@@ -61,12 +64,9 @@ module MMU #(
     assign vaSrc = mmu_cmd == `MMU_CMD_PROB_TLB ? 1'b1 : 1'b0;
     assign vAddr = vaSrc ? vAddrIn : {reg_entryHi[31:13], {12{1'b0}}};
     assign asid = reg_entryHi[7:0];
-    assign mmu_tlbMiss = ~|matched;
 
     assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
     assign tlbReadIndex = addrValid ? matchedIndex : reg_index;
-
-    assign pAddrOut = pAddr;
 
     always @* begin
         case(mmu_cmd)
@@ -74,6 +74,17 @@ module MMU #(
             `MMU_CMD_WRITE_TLB:        tlbWriteIndex = reg_index;
             default: tlbWriteIndex = 32'dx;
         endcase
+    end
+
+    always @* begin
+        if(~selectedEntryLo[1])
+            exceptionReg = `MMU_EXCEPTION_TLBINVALID;
+        else if(selectedEntryLo[2] && mmu_accessType == `MEM_ACCESS_W)
+            exceptionReg = `MMU_EXCEPTION_TLBMODIFIED;
+        else if(~|matched)
+            exceptionReg = `MMU_EXCEPTION_TLBMISS;
+        else
+            exceptionReg = `MMU_EXCEPTION_NONE;
     end
 
     always @* begin: maskConverter
@@ -174,6 +185,7 @@ module MMU #(
     always @(posedge clk) begin
         if(addrValid) begin
             pAddrOut <= pAddr;
+            mmu_exception <= exceptionReg;
         end
     end
 
