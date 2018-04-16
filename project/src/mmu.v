@@ -2,12 +2,12 @@
 `include "mmu.vh"
 
 module MMU #(
-    parameter ENTRY_ADDR_WIDTH = 3
+    parameter ENTRY_ADDR_WIDTH = 4
 ) (
     input wire clk, res,
     input wire addrValid,
-    input wire [31:0] vAddrIn,
-    output reg [31:0] pAddrOut,
+    input wire [31:0] vAddr,
+    output reg [31:0] pAddr,
 
     input wire `MMU_REG_T mmu_reg,
     input wire `MEM_ACCESS_T mmu_accessType,
@@ -28,45 +28,15 @@ module MMU #(
     reg [31:0] reg_pageMask;
     reg [31:0] reg_wired;
     reg [31:0] reg_entryHi;
-
-    wire vaSrc;
-    wire [31:0] vAddr;
-    reg [31:0] pAddr;
-    // TLB entries
-    reg [31:0] tlb_entryHi[ENTRY_COUNT - 1:0];
-    reg [31:0] tlb_entryLo0[ENTRY_COUNT - 1:0];
-    reg [31:0] tlb_entryLo1[ENTRY_COUNT - 1:0];
-    reg [31:0] tlb_pageMask[ENTRY_COUNT - 1:0];
-    wire [31:0] selectedEntryLo;
-    wire [31:0] tlbRead_entryHi;
-    wire [31:0] tlbRead_entryLo0;
-    wire [31:0] tlbRead_entryLo1;
-    wire [31:0] tlbRead_pageMask;
-    wire [15:0] mask;
-    wire [7:0] asid;
-    wire [31:0] matchedIndex;
-    reg matchedEvenOddBit;
-    reg [3:0] matchedPageMaskKind;
-    reg [31:0] tlbWriteIndex;
-    wire [31:0] tlbReadIndex;
-    reg `MMU_EXCEPTION_T exceptionReg;
-    // TLB lookup temprory variables
-    wire [ENTRY_COUNT - 1:0] matched;
+    wire [31:0] tlbOut_entryHi, tlbOut_entryLo0, tlbOut_entryLo1, tlbOut_pageMask, tlbOut_index;
+    wire found, valid, dirty;
 
     wire writeTlb;
-
-    assign tlbRead_entryHi  = tlb_entryHi[tlbReadIndex];
-    assign tlbRead_entryLo0 = tlb_entryLo0[tlbReadIndex];
-    assign tlbRead_entryLo1 = tlb_entryLo1[tlbReadIndex];
-    assign tlbRead_pageMask = tlb_pageMask[tlbReadIndex];
-    assign mask = tlbRead_pageMask[28:13];
-    assign selectedEntryLo = matchedEvenOddBit ? tlbRead_entryLo1 : tlbRead_entryLo0;
-    assign vaSrc = mmu_cmd == `MMU_CMD_PROB_TLB ? 1'b1 : 1'b0;
-    assign vAddr = vaSrc ? vAddrIn : {reg_entryHi[31:13], {12{1'b0}}};
-    assign asid = reg_entryHi[7:0];
+    wire [31:0] pAddrReg;
+    reg [31:0] tlbWriteIndex;
+    reg `MMU_EXCEPTION_T exceptionReg;
 
     assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
-    assign tlbReadIndex = addrValid ? matchedIndex : reg_index;
 
     always @* begin
         case(mmu_cmd)
@@ -77,114 +47,45 @@ module MMU #(
     end
 
     always @* begin
-        if(~selectedEntryLo[1])
+        if(!valid)
             exceptionReg = `MMU_EXCEPTION_TLBINVALID;
-        else if(selectedEntryLo[2] && mmu_accessType == `MEM_ACCESS_W)
+        else if(dirty && mmu_accessType == `MEM_ACCESS_W)
             exceptionReg = `MMU_EXCEPTION_TLBMODIFIED;
-        else if(~|matched)
+        else if(~found)
             exceptionReg = `MMU_EXCEPTION_TLBMISS;
         else
             exceptionReg = `MMU_EXCEPTION_NONE;
     end
 
-    always @* begin: maskConverter
-        if(~|mask)
-            matchedPageMaskKind = 4'd0;
-        else if(~|mask[15:2] && &mask[1:0])
-            matchedPageMaskKind = 4'd1;
-        else if(~|mask[15:4] && &mask[3:2])
-            matchedPageMaskKind = 4'd2;
-        else if(~|mask[15:6] && &mask[5:4])
-            matchedPageMaskKind = 4'd3;
-        else if(~|mask[15:8] && &mask[7:6])
-            matchedPageMaskKind = 4'd4;
-        else if(~|mask[15:10] && &mask[9:8])
-            matchedPageMaskKind = 4'd5;
-        else if(~|mask[15:12] && &mask[11:10])
-            matchedPageMaskKind = 4'd6;
-        else if(~|mask[15:14] && &mask[13:12])
-            matchedPageMaskKind = 4'd7;
-        else if(&mask[15:14])
-            matchedPageMaskKind = 4'd8;
-        else
-            matchedPageMaskKind = 4'dx; 
-        // case(tlbRead_pageMask[28:13])
-        //     16'b0000_0000_0000_0000: matchedPageMaskKind = 4'd0; // 4KB
-        //     16'b0000_0000_0000_0011: matchedPageMaskKind = 4'd1; // 16KB
-        //     16'b0000_0000_0000_11xx: matchedPageMaskKind = 4'd2; // 64KB
-        //     16'b0000_0000_0011_xxxx: matchedPageMaskKind = 4'd3; // 256KB
-        //     16'b0000_0000_11xx_xxxx: matchedPageMaskKind = 4'd4; // 1MB
-        //     16'b0000_0011_xxxx_xxxx: matchedPageMaskKind = 4'd5; // 4MB
-        //     16'b0000_11xx_xxxx_xxxx: matchedPageMaskKind = 4'd6; // 16MB
-        //     16'b0011_xxxx_xxxx_xxxx: matchedPageMaskKind = 4'd7; // 64MB
-        //     16'b11xx_xxxx_xxxx_xxxx: matchedPageMaskKind = 4'd8; // 256MB
-        //     default:                 matchedPageMaskKind = 4'dx;
-        // endcase
-    end
+    TLB #(
+        .ENTRY_ADDR_WIDTH(ENTRY_ADDR_WIDTH)
+    ) tlb (
+        .clk(clk),
+        .res(res),
+        .vAddr(mmu_cmd == `MMU_CMD_PROB_TLB ? {reg_entryHi[31:13], {12{1'b0}}} : vAddr),
+        .pAddr(pAddrReg),
+        .entryHiIn(reg_entryHi),
+        .entryLo0In(reg_entryLo0),
+        .entryLo1In(reg_entryLo1),
+        .pageMaskIn(reg_pageMask),
+        .index(tlbWriteIndex),
+        
+        .we(writeTlb),
+        .re(mmu_cmd == `MMU_CMD_READ_TLB),
+        .found(found),
+        .bitV(valid),
+        .bitD(dirty),
 
-    always @* begin
-        case(matchedPageMaskKind)
-            4'd0: matchedEvenOddBit = vAddrIn[12];
-            4'd1: matchedEvenOddBit = vAddrIn[14];
-            4'd2: matchedEvenOddBit = vAddrIn[16];
-            4'd3: matchedEvenOddBit = vAddrIn[18];
-            4'd4: matchedEvenOddBit = vAddrIn[20];
-            4'd5: matchedEvenOddBit = vAddrIn[22];
-            4'd6: matchedEvenOddBit = vAddrIn[24];
-            4'd7: matchedEvenOddBit = vAddrIn[26];
-            4'd8: matchedEvenOddBit = vAddrIn[28];
-            default: matchedEvenOddBit = 1'bx;
-        endcase
-    end
-
-    always @* begin
-        case(matchedPageMaskKind)
-            4'd0: pAddr = {selectedEntryLo[31:12], vAddrIn[11:0]}; 
-            4'd1: pAddr = {selectedEntryLo[31:14], vAddrIn[13:0]};
-            4'd2: pAddr = {selectedEntryLo[31:16], vAddrIn[15:0]};
-            4'd3: pAddr = {selectedEntryLo[31:18], vAddrIn[17:0]};
-            4'd4: pAddr = {selectedEntryLo[31:20], vAddrIn[19:0]}; 
-            4'd5: pAddr = {selectedEntryLo[31:22], vAddrIn[21:0]}; 
-            4'd6: pAddr = {selectedEntryLo[31:24], vAddrIn[23:0]};
-            4'd7: pAddr = {selectedEntryLo[31:26], vAddrIn[25:0]};
-            4'd8: pAddr = {selectedEntryLo[31:28], vAddrIn[27:0]};
-            default: pAddr = 32'dx;
-        endcase
-    end
-
-    genvar i;
-    generate
-        for(i = 0; i < ENTRY_COUNT; i = i + 1) begin: tlbLookup
-            wire [31:0] entryHi = tlb_entryHi[i];
-            wire [31:0] entryLo0 = tlb_entryLo0[i];
-            wire [31:0] entryLo1 = tlb_entryLo1[i];
-            wire [15:0] mask = tlb_pageMask[i][28:13];
-            wire [18:0] tlb_vpn2 = entryHi[31:13];
-            wire [18:0] vpn2 = vAddr[31:13];
-            wire g = entryLo0[0] & entryLo1[0];
-
-            assign matched[i] = tlb_vpn2 & ~mask == vpn2 & ~mask && (g || reg_entryHi[7:0] == entryHi[7:0]);
-        end
-    endgenerate
-
-    Encoder #(.OUT_WIDTH(ENTRY_ADDR_WIDTH)) matchedEncoder (
-        .in(matched),
-        .out(matchedIndex)
+        .entryHiOut(tlbOut_entryHi),
+        .entryLo0Out(tlbOut_entryLo0),
+        .entryLo1Out(tlbOut_entryLo1),
+        .pageMaskOut(tlbOut_pageMask),
+        .matchedIndex(tlbOut_index)
     );
-
-    always @(posedge clk) begin: tlbWrite
-        if(writeTlb) begin
-            tlb_pageMask[tlbWriteIndex] <= reg_pageMask;
-            tlb_entryHi [tlbWriteIndex] <= reg_entryHi;
-            tlb_entryLo0[tlbWriteIndex] <= reg_entryLo0;
-            tlb_entryLo1[tlbWriteIndex] <= reg_entryLo1;
-            $display("written TLB entry $%d", tlbWriteIndex);
-        end
-    end
 
     always @(posedge clk) begin
         if(addrValid) begin
-            pAddrOut <= pAddr;
+            pAddr <= pAddrReg;
             mmu_exception <= exceptionReg;
         end
     end

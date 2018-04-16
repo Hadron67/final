@@ -9,7 +9,6 @@
 module CPUCore(
     input wire clk,
     input wire res,
-    input wire pageFaultIReq,
     output wire hlt,
     
     input wire [31:0] db_dataIn,
@@ -53,7 +52,7 @@ module CPUCore(
     wire writeMem, readMem;
     wire jmp, branch;
     wire writeCP0, readCP0;
-    wire isTlbOp;
+    wire isTlbOp, eret;
     
     reg [31:0] pc; 
     wire [31:0] nextpc;
@@ -62,6 +61,7 @@ module CPUCore(
     wire [31:0] cp0RegOut;
     wire [5:0] tlbOp;
     wire readMMUReg, writeMMUReg;
+    wire [31:0] cp0_epc, cp0_status, cp0_cause, cp0_badVAddr;
 
     assign hlt = nextState == S_HLT;
     assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
@@ -77,7 +77,7 @@ module CPUCore(
     assign dataIn = db_dataIn;
 
     // multiplexer for registers input
-    always @* begin
+    always @* begin: mux_registerInput
         case(writeRegSrc)
             2'd0: regIn = aluOut;
             2'd1: regIn = dataIn;
@@ -86,7 +86,7 @@ module CPUCore(
         endcase
     end
     // data address
-    always @* begin
+    always @* begin: mux_dataAddress
         if(nextState == S_FETCH_INSTRUCTION) begin
             if(state == S_INITIAL)
                 db_addr = pc;
@@ -96,7 +96,7 @@ module CPUCore(
             db_addr = aluOut;
     end
     // data access type
-    always @* begin
+    always @* begin: mux_accessType
         case(nextState)
             S_FETCH_INSTRUCTION: db_accessType = `MEM_ACCESS_X;
             S_READ_MEM:          db_accessType = `MEM_ACCESS_R;
@@ -104,7 +104,7 @@ module CPUCore(
             default:             db_accessType = `MEM_ACCESS_NONE;
         endcase
     end
-    always @* begin
+    always @* begin: mux_tlbOp
         if(isTlbOp && nextState == S_FETCH_INSTRUCTION) begin
             case(tlbOp)
                 // `TLBOP_TLBINV: 
@@ -130,8 +130,10 @@ module CPUCore(
         .target(ins[25:0]),
         .imm(ins[15:0]),
         .pc(pc),
+        .epc(cp0_epc),
         .nextpc(nextpc),
-        .z(zero)
+        .z(zero),
+        .eret(eret)
     );
     Controller ctl(
         .ins(ins),
@@ -150,7 +152,8 @@ module CPUCore(
         .branch(branch),
         .writeCP0(writeCP0),
         .readCP0(readCP0),
-        .isTlbOp(isTlbOp)
+        .isTlbOp(isTlbOp),
+        .eret(eret)
     );
     RegFile regs (
         .clk(clk),
@@ -176,7 +179,15 @@ module CPUCore(
         .mmu_dataIn(mmu_dataIn),
         .mmu_reg(mmu_reg),
         .readMMUReg(readMMUReg),
-        .writeMMUReg(writeMMUReg)
+        .writeMMUReg(writeMMUReg),
+
+        .in_epc(pc),
+        .we_epc(nextState == S_EXCEPTION),
+
+        .cp0_epc(cp0_epc),
+        .cp0_cause(cp0_cause),
+        .cp0_badVAddr(cp0_badVAddr),
+        .cp0_status(cp0_status)
     );
     ALU alu (
         .optr(aluOptr),
@@ -193,7 +204,7 @@ module CPUCore(
         case(state)
             S_INITIAL: nextState = S_FETCH_INSTRUCTION;
             S_FETCH_INSTRUCTION: 
-                if(pageFaultIReq) begin
+                if(mmu_exception != `MMU_EXCEPTION_NONE) begin
                     nextState = S_EXCEPTION;
                 end 
                 else if(db_ready)
@@ -216,12 +227,12 @@ module CPUCore(
             S_WRITE_MEM: nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
             S_HLT: nextState = S_HLT;
             // TODO: process exceptions
-            S_EXCEPTION: nextState = S_EXCEPTION;
+            S_EXCEPTION: nextState = S_FETCH_INSTRUCTION;
         endcase
     end
     
     // pc and instruction ff
-    always @(posedge clk or posedge res) begin
+    always @(posedge clk or posedge res) begin: ff_pc
         if(res) begin
             state <= S_INITIAL;
             pc <= 0;

@@ -7,6 +7,7 @@ CP0RegNum.v \
 CPU.v \
 InstructionFetcher.v \
 mmu.v \
+tlb.v \
 CP0Regs.v \
 RegFile.v \
 random32.v \

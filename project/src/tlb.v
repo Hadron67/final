@@ -1,32 +1,37 @@
 module TLB #(
-    parameter ENTRY_ADDR_WIDTH = 3;
+    parameter ENTRY_ADDR_WIDTH = 3
 ) (
     input wire clk, res,
     input wire [31:0] vAddr,
     output reg [31:0] pAddr,
     input wire [31:0] entryHiIn, entryLo0In, entryLo1In, pageMaskIn,
-    input wire [ENTRY_ADDR_WIDTH - 1:0] index,
+    input wire [31:0] index,
     input wire re, we,
     output wire [31:0] entryHiOut, entryLo0Out, entryLo1Out, pageMaskOut, matchedIndex,
-    output wire found
+    output wire found, bitD, bitV, bitG
 );
+    localparam ENTRY_COUNT = 1 << ENTRY_ADDR_WIDTH;
     reg [31:0] tlb_entryHi[ENTRY_COUNT - 1:0];
     reg [31:0] tlb_entryLo0[ENTRY_COUNT - 1:0];
     reg [31:0] tlb_entryLo1[ENTRY_COUNT - 1:0];
     reg [31:0] tlb_pageMask[ENTRY_COUNT - 1:0];
     wire [31:0] selectedEntryLo;
     wire [15:0] mask;
-    wire [ENTRY_ADDR_WIDTH - 1:0] readIndex;
+    wire [ENTRY_ADDR_WIDTH - 1:0] readIndex, matchedIndexOut;
     wire [ENTRY_COUNT - 1:0] matched;
     reg [3:0] matchedPageMaskKind;
     reg matchedEvenOddBit;
 
+    assign matchedIndex = {{(32 - ENTRY_ADDR_WIDTH){1'b0}}, matchedIndexOut};
     assign readIndex = re ? index : matchedIndex;
     assign entryHiOut = tlb_entryHi[readIndex];
     assign entryLo0Out = tlb_entryLo0[readIndex];
     assign entryLo1Out = tlb_entryLo1[readIndex];
     assign pageMaskOut = tlb_pageMask[readIndex];
     assign selectedEntryLo = matchedEvenOddBit ? entryLo1Out : entryLo1Out;
+    assign bitD = selectedEntryLo[2];
+    assign bitV = selectedEntryLo[1];
+    assign bitG = selectedEntryLo[0];
     assign mask = pageMaskOut[28:13];
     assign found = |matched;
 
@@ -94,13 +99,13 @@ module TLB #(
             wire [18:0] vpn2 = vAddr[31:13];
             wire g = entryLo0[0] & entryLo1[0];
 
-            assign matched[i] = tlb_vpn2 & ~mask == vpn2 & ~mask && (g || reg_entryHi[7:0] == entryHi[7:0]);
+            assign matched[i] = tlb_vpn2 & ~mask == vpn2 & ~mask && (g || entryHiIn[7:0] == entryHi[7:0]);
         end
     endgenerate
 
     Encoder #(.OUT_WIDTH(ENTRY_ADDR_WIDTH)) matchedEncoder (
         .in(matched),
-        .out(matchedIndex)
+        .out(matchedIndexOut)
     );
 
     always @(posedge clk or posedge res) begin

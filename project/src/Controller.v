@@ -19,7 +19,8 @@ module Controller(
     output wire branch,
     output wire writeCP0,
     output wire readCP0,
-    output wire isTlbOp
+    output wire isTlbOp,
+    output wire eret
 );
     wire [5:0] op;
     wire [5:0] func;
@@ -109,5 +110,6 @@ module Controller(
     assign readCP0 = op == `OPCODE_COP0 && rs == 0 && ~|ins[10:3];
     assign writeCP0 = op == `OPCODE_COP0 && rs == 4 && ~|ins[10:3];
     assign isTlbOp = op == `OPCODE_COP0 && ins[25] && ~|ins[24:6];
+    assign eret = isTlbOp && ins[5:0] == 6'b011000;
 
 endmodule
