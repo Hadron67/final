@@ -28,7 +28,7 @@ module TLB #(
     assign entryLo0Out = tlb_entryLo0[readIndex];
     assign entryLo1Out = tlb_entryLo1[readIndex];
     assign pageMaskOut = tlb_pageMask[readIndex];
-    assign selectedEntryLo = matchedEvenOddBit ? entryLo1Out : entryLo1Out;
+    assign selectedEntryLo = matchedEvenOddBit ? entryLo1Out : entryLo0Out;
     assign bitD = selectedEntryLo[2];
     assign bitV = selectedEntryLo[1];
     assign bitG = selectedEntryLo[0];
@@ -75,15 +75,15 @@ module TLB #(
 
     always @* begin
         case(matchedPageMaskKind)
-            4'd0: pAddr = {selectedEntryLo[31:12], vAddr[11:0]}; 
-            4'd1: pAddr = {selectedEntryLo[31:14], vAddr[13:0]};
-            4'd2: pAddr = {selectedEntryLo[31:16], vAddr[15:0]};
-            4'd3: pAddr = {selectedEntryLo[31:18], vAddr[17:0]};
-            4'd4: pAddr = {selectedEntryLo[31:20], vAddr[19:0]}; 
-            4'd5: pAddr = {selectedEntryLo[31:22], vAddr[21:0]}; 
-            4'd6: pAddr = {selectedEntryLo[31:24], vAddr[23:0]};
-            4'd7: pAddr = {selectedEntryLo[31:26], vAddr[25:0]};
-            4'd8: pAddr = {selectedEntryLo[31:28], vAddr[27:0]};
+            4'd0: pAddr = {selectedEntryLo[25:6], vAddr[11:0]}; 
+            4'd1: pAddr = {selectedEntryLo[25:8], vAddr[13:0]};
+            4'd2: pAddr = {selectedEntryLo[25:10], vAddr[15:0]};
+            4'd3: pAddr = {selectedEntryLo[25:12], vAddr[17:0]};
+            4'd4: pAddr = {selectedEntryLo[25:14], vAddr[19:0]}; 
+            4'd5: pAddr = {selectedEntryLo[25:16], vAddr[21:0]}; 
+            4'd6: pAddr = {selectedEntryLo[25:18], vAddr[23:0]};
+            4'd7: pAddr = {selectedEntryLo[25:20], vAddr[25:0]};
+            4'd8: pAddr = {selectedEntryLo[25:22], vAddr[27:0]};
             default: pAddr = 32'dx;
         endcase
     end
@@ -99,7 +99,7 @@ module TLB #(
             wire [18:0] vpn2 = vAddr[31:13];
             wire g = entryLo0[0] & entryLo1[0];
 
-            assign matched[i] = tlb_vpn2 & ~mask == vpn2 & ~mask && (g || entryHiIn[7:0] == entryHi[7:0]);
+            assign matched[i] = ((tlb_vpn2 & ~mask) == (vpn2 & ~mask)) && (g || entryHiIn[7:0] == entryHi[7:0]);
         end
     endgenerate
 

@@ -20,5 +20,5 @@ refer to the applicable agreement for further details.
 */
 (header "graphic" (version "1.4"))
 (block
-	(rect 184 88 304 232)
-	(text "block_name" (rect 5 5 78 19)(font "Intel Clear" (font_size 8)))	(text "inst" (rect 5 129 23 141)(font "Intel Clear" )))
+	(rect 240 128 400 352)
+	(text "block_name" (rect 5 5 78 19)(font "Intel Clear" (font_size 8)))	(text "inst" (rect 5 209 23 221)(font "Intel Clear" )))

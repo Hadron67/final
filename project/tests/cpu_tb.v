@@ -93,22 +93,22 @@ module cpu_tb();
         res = 0;
         clkEnable = 0;
 
-        #10;
+        #100;
         res = 1;
-        #10;
+        #100;
         res = 0;
-        #20;
+        #200;
         clkEnable = 1;
     end
     always begin
         if(hlt) begin
             $display(`FONT_GREEN("Last instruction reached, exit."));
-            $dumpflush();
+            $dumpflush;
             $stop();
         end 
         clk1 <= ~clk1;
         if(clkEnable)
             clk <= clk1;
-        #10;
+        #100;
     end
 endmodule

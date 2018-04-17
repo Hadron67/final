@@ -1,23 +1,1041 @@
 Info: Start Nativelink Simulation process
-Info: NativeLink has detected Verilog design -- Verilog simulation models will be used
 
 ========= EDA Simulation Settings =====================
 
-Sim Mode              :  RTL
+Sim Mode              :  Gate
 Family                :  cycloneive
 Quartus root          :  /home/cfy/programs/quartus/main/quartus/linux64/
 Quartus sim root      :  /home/cfy/programs/quartus/main/quartus/eda/sim_lib
 Simulation Tool       :  modelsim-altera
 Simulation Language   :  verilog
 Simulation Mode       :  GUI
-Sim Output File       :  
-Sim SDF file          :  
+Sim Output File       :  final-1.vo
+Sim SDF file          :  final-1__verilog.sdo
 Sim dir               :  simulation/modelsim
 
 =======================================================
 
 Info: Starting NativeLink simulation with ModelSim-Altera software
 Sourced NativeLink script /home/cfy/programs/quartus/main/quartus/common/tcl/internal/nativelink/modelsim.tcl
-Warning: File final-1_run_msim_rtl_verilog.do already exists - backing up current file as final-1_run_msim_rtl_verilog.do.bak11
-Info: Spawning ModelSim-Altera Simulation software 
-Info: NativeLink simulation flow was successful
+Warning: File final-1_run_msim_gate_verilog.do already exists - backing up current file as final-1_run_msim_gate_verilog.do.bak2
+Probing transcript
+ModelSim-Altera Info: # do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:47:38 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:47:39 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:47:39 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(1): Cannot open `include file "/home/cfy/programs/final/project/tests/opcode.vh".
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(2): Cannot open `include file "/home/cfy/programs/final/project/tests/DataBus.vh".
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(3): Cannot open `include file "/home/cfy/programs/final/project/tests/font.vh".
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(24): (vlog-2163) Macro `MEM_ACCESS_R is undefined.
+ModelSim-Altera Error: # ** Error: (vlog-13069) /home/cfy/programs/final/project/tests/cpu_tb.v(24): near ":": syntax error, unexpected ':'.
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(28): (vlog-2163) Macro `MEM_ACCESS_W is undefined.
+ModelSim-Altera Error: # ** Error: (vlog-13069) /home/cfy/programs/final/project/tests/cpu_tb.v(28): near "begin": syntax error, unexpected begin, expecting IDENTIFIER or TYPE_IDENTIFIER or NETTYPE_IDENTIFIER.
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(32): (vlog-2163) Macro `MEM_ACCESS_X is undefined.
+ModelSim-Altera Error: # ** Error: (vlog-13069) /home/cfy/programs/final/project/tests/cpu_tb.v(32): near "begin": syntax error, unexpected begin, expecting IDENTIFIER or TYPE_IDENTIFIER or NETTYPE_IDENTIFIER.
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(33): (vlog-2163) Macro `FONT_YELLOW is undefined.
+ModelSim-Altera Error: # ** Error: (vlog-13069) /home/cfy/programs/final/project/tests/cpu_tb.v(36): near "endcase": syntax error, unexpected endcase.
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(40): (vlog-2163) Macro `OPCODE_ADDI is undefined.
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(41): (vlog-13205) Syntax error found in the scope following 'mem'. Is there a missing '::'?
+ModelSim-Altera Info: # End time: 17:47:39 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 13, Warnings: 0
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: # Error in macro ./final-1_run_msim_gate_verilog.do line 10
+ModelSim-Altera Info: # /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: #     while executing
+ModelSim-Altera Info: # "vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests {/home/cfy/programs/final/project/tests/cpu_tb.v}"
+ModelSim-Altera Info: 
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:49:13 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:49:14 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:49:14 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/final/project/tests/cpu_tb.v(87): (vlog-2163) Macro `OUT_DIR is undefined.
+ModelSim-Altera Error: # ** Error: (vlog-13069) /home/cfy/programs/final/project/tests/cpu_tb.v(87): near ",": syntax error, unexpected ','.
+ModelSim-Altera Info: # End time: 17:49:14 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 2, Warnings: 0
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: # Error in macro ./final-1_run_msim_gate_verilog.do line 10
+ModelSim-Altera Info: # /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: #     while executing
+ModelSim-Altera Info: # "vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/pr..."
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:50:56 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:50:57 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:50:57 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:50:57 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -sv -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.sv}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:50:57 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -sv -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.sv 
+ModelSim-Altera Error: # ** Error: (vlog-7) Failed to open design unit file "/home/cfy/programs/final/project/src/mmu.sv" in read mode.
+ModelSim-Altera Info: # No such file or directory. (errno = ENOENT)
+ModelSim-Altera Info: # End time: 17:50:57 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 1, Warnings: 0
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: # Error in macro ./final-1_run_msim_gate_verilog.do line 12
+ModelSim-Altera Info: # /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: #     while executing
+ModelSim-Altera Info: # "vlog -sv -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.sv}"
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:16 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:52:16 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:16 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:52:16 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:16 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.v 
+ModelSim-Altera Info: # -- Compiling module MMU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	MMU
+ModelSim-Altera Info: # End time: 17:52:16 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/InstructionFetcher.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:16 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/InstructionFetcher.v 
+ModelSim-Altera Info: # -- Compiling module InstructionFetcher
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	InstructionFetcher
+ModelSim-Altera Info: # End time: 17:52:16 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/DataBus.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:16 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/DataBus.v 
+ModelSim-Altera Error: # ** Error: (vlog-7) Failed to open design unit file "/home/cfy/programs/final/project/src/DataBus.v" in read mode.
+ModelSim-Altera Info: # No such file or directory. (errno = ENOENT)
+ModelSim-Altera Info: # End time: 17:52:17 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 1, Warnings: 0
+ModelSim-Altera Error: # ** Error: /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: # Error in macro ./final-1_run_msim_gate_verilog.do line 14
+ModelSim-Altera Info: # /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/vlog failed.
+ModelSim-Altera Info: #     while executing
+ModelSim-Altera Info: # "vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/DataBus.v}"
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:29 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.v 
+ModelSim-Altera Info: # -- Compiling module MMU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	MMU
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/InstructionFetcher.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/InstructionFetcher.v 
+ModelSim-Altera Info: # -- Compiling module InstructionFetcher
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	InstructionFetcher
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/ALU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/ALU.v 
+ModelSim-Altera Info: # -- Compiling module ALU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	ALU
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/top.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/top.v 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/Controller.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/Controller.v 
+ModelSim-Altera Info: # -- Compiling module Controller
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	Controller
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CPU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CPU.v 
+ModelSim-Altera Info: # -- Compiling module CPUCore
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CPUCore
+ModelSim-Altera Info: # End time: 17:52:30 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vsim -t 1ps +transport_int_delays +transport_path_delays -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs="+acc"  cpu_tb
+ModelSim-Altera Info: # vsim -t 1ps "+transport_int_delays" "+transport_path_delays" -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs=""+acc"" cpu_tb 
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # Loading work.cpu_tb
+ModelSim-Altera Info: # Loading work.CPUCore
+ModelSim-Altera Info: # Loading work.InstructionFetcher
+ModelSim-Altera Info: # Loading work.Controller
+ModelSim-Altera Error: # ** Error: (vsim-3033) /home/cfy/programs/final/project/src/CPU.v(158): Instantiation of 'RegFile' failed. The design unit was not found.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Info: #         Searched libraries:
+ModelSim-Altera Info: #             /home/cfy/programs/quartus/main/modelsim_ase/altera/verilog/altera
+ModelSim-Altera Info: #             /home/cfy/programs/quartus/main/modelsim_ase/altera/verilog/cycloneive
+ModelSim-Altera Info: #             /home/cfy/programs/final/project/simulation/modelsim/gate_work
+ModelSim-Altera Info: #             /home/cfy/programs/final/project/simulation/modelsim/gate_work
+ModelSim-Altera Error: # ** Error: (vsim-3033) /home/cfy/programs/final/project/src/CPU.v(169): Instantiation of 'CP0Regs' failed. The design unit was not found.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Info: #         Searched libraries:
+ModelSim-Altera Info: #             /home/cfy/programs/quartus/main/modelsim_ase/altera/verilog/altera
+ModelSim-Altera Info: #             /home/cfy/programs/quartus/main/modelsim_ase/altera/verilog/cycloneive
+ModelSim-Altera Info: #             /home/cfy/programs/final/project/simulation/modelsim/gate_work
+ModelSim-Altera Info: #             /home/cfy/programs/final/project/simulation/modelsim/gate_work
+ModelSim-Altera Info: # Loading work.ALU
+ModelSim-Altera Info: # Loading work.DummyMem
+ModelSim-Altera Info: # Error loading design
+ModelSim-Altera Info: # Error: Error loading design
+ModelSim-Altera Info: #        Pausing macro execution
+ModelSim-Altera Info: # MACRO ./final-1_run_msim_gate_verilog.do PAUSED at line 19
+ModelSim-Altera Info: 
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # transcript on
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:04 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:53:04 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:04 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:53:04 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:04 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.v 
+ModelSim-Altera Info: # -- Compiling module MMU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	MMU
+ModelSim-Altera Info: # End time: 17:53:04 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/InstructionFetcher.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:05 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/InstructionFetcher.v 
+ModelSim-Altera Info: # -- Compiling module InstructionFetcher
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	InstructionFetcher
+ModelSim-Altera Info: # End time: 17:53:05 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/ALU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:05 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/ALU.v 
+ModelSim-Altera Info: # -- Compiling module ALU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	ALU
+ModelSim-Altera Info: # End time: 17:53:05 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/top.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:05 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/top.v 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:53:05 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/Controller.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:05 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/Controller.v 
+ModelSim-Altera Info: # -- Compiling module Controller
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	Controller
+ModelSim-Altera Info: # End time: 17:53:05 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CPU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:05 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CPU.v 
+ModelSim-Altera Info: # -- Compiling module CPUCore
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CPUCore
+ModelSim-Altera Info: # End time: 17:53:05 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/RegFile.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:05 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/RegFile.v 
+ModelSim-Altera Info: # -- Compiling module RegFile
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	RegFile
+ModelSim-Altera Info: # End time: 17:53:05 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vsim -t 1ps +transport_int_delays +transport_path_delays -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs="+acc"  cpu_tb
+ModelSim-Altera Info: # vsim -t 1ps "+transport_int_delays" "+transport_path_delays" -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs=""+acc"" cpu_tb 
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # Loading work.cpu_tb
+ModelSim-Altera Info: # Loading work.CPUCore
+ModelSim-Altera Info: # Loading work.InstructionFetcher
+ModelSim-Altera Info: # Loading work.Controller
+ModelSim-Altera Info: # Loading work.RegFile
+ModelSim-Altera Error: # ** Error: (vsim-3033) /home/cfy/programs/final/project/src/CPU.v(169): Instantiation of 'CP0Regs' failed. The design unit was not found.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Info: #         Searched libraries:
+ModelSim-Altera Info: #             /home/cfy/programs/quartus/main/modelsim_ase/altera/verilog/altera
+ModelSim-Altera Info: #             /home/cfy/programs/quartus/main/modelsim_ase/altera/verilog/cycloneive
+ModelSim-Altera Info: #             /home/cfy/programs/final/project/simulation/modelsim/gate_work
+ModelSim-Altera Info: #             /home/cfy/programs/final/project/simulation/modelsim/gate_work
+ModelSim-Altera Info: # Loading work.ALU
+ModelSim-Altera Info: # Loading work.DummyMem
+ModelSim-Altera Info: # Error loading design
+ModelSim-Altera Info: # Error: Error loading design
+ModelSim-Altera Info: #        Pausing macro execution
+ModelSim-Altera Info: # MACRO ./final-1_run_msim_gate_verilog.do PAUSED at line 20
+ModelSim-Altera Info: 
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # transcript on
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:30 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.v 
+ModelSim-Altera Info: # -- Compiling module MMU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	MMU
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/InstructionFetcher.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/InstructionFetcher.v 
+ModelSim-Altera Info: # -- Compiling module InstructionFetcher
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	InstructionFetcher
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/ALU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/ALU.v 
+ModelSim-Altera Info: # -- Compiling module ALU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	ALU
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/top.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/top.v 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/Controller.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/Controller.v 
+ModelSim-Altera Info: # -- Compiling module Controller
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	Controller
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CPU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CPU.v 
+ModelSim-Altera Info: # -- Compiling module CPUCore
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CPUCore
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/RegFile.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/RegFile.v 
+ModelSim-Altera Info: # -- Compiling module RegFile
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	RegFile
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CP0Regs.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:53:31 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CP0Regs.v 
+ModelSim-Altera Info: # -- Compiling module CP0Regs
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CP0Regs
+ModelSim-Altera Info: # End time: 17:53:31 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vsim -t 1ps +transport_int_delays +transport_path_delays -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs="+acc"  cpu_tb
+ModelSim-Altera Info: # vsim -t 1ps "+transport_int_delays" "+transport_path_delays" -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs=""+acc"" cpu_tb 
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # Loading work.cpu_tb
+ModelSim-Altera Info: # Loading work.CPUCore
+ModelSim-Altera Info: # Loading work.InstructionFetcher
+ModelSim-Altera Info: # Loading work.Controller
+ModelSim-Altera Info: # Loading work.RegFile
+ModelSim-Altera Info: # Loading work.CP0Regs
+ModelSim-Altera Info: # Loading work.ALU
+ModelSim-Altera Info: # Loading work.DummyMem
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Too few port connections. Expected 13, found 8.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_reg'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataIn'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataOut'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_cmd'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Too few port connections. Expected 10, found 9.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/insFetcher File: /home/cfy/programs/final/project/src/InstructionFetcher.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Missing connection for port 'exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Too few port connections. Expected 24, found 18.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/cp0Regs File: /home/cfy/programs/final/project/src/CP0Regs.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3015) /home/cfy/programs/final/project/src/CPU.v(192): [PCDPC] - Port size (64) does not match connection size (32) for port 'result'. The port definition is at: /home/cfy/programs/final/project/src/ALU.v(11).
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/alu File: /home/cfy/programs/final/project/src/ALU.v
+ModelSim-Altera Info: # ** Error (suppressible): (vsim-PLI-3072) /home/cfy/programs/final/project/tests/cpu_tb.v(106): $dumpflush : Does not take any arguments.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb File: /home/cfy/programs/final/project/tests/cpu_tb.v
+ModelSim-Altera Info: # Error loading design
+ModelSim-Altera Info: # Error: Error loading design
+ModelSim-Altera Info: #        Pausing macro execution
+ModelSim-Altera Info: # MACRO ./final-1_run_msim_gate_verilog.do PAUSED at line 21
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # transcript on
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:00 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:54:00 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:00 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:54:00 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:00 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.v 
+ModelSim-Altera Info: # -- Compiling module MMU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	MMU
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/InstructionFetcher.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/InstructionFetcher.v 
+ModelSim-Altera Info: # -- Compiling module InstructionFetcher
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	InstructionFetcher
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/ALU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/ALU.v 
+ModelSim-Altera Info: # -- Compiling module ALU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	ALU
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/top.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/top.v 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/Controller.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/Controller.v 
+ModelSim-Altera Info: # -- Compiling module Controller
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	Controller
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CPU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CPU.v 
+ModelSim-Altera Info: # -- Compiling module CPUCore
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CPUCore
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/RegFile.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/RegFile.v 
+ModelSim-Altera Info: # -- Compiling module RegFile
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	RegFile
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CP0Regs.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:54:01 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CP0Regs.v 
+ModelSim-Altera Info: # -- Compiling module CP0Regs
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CP0Regs
+ModelSim-Altera Info: # End time: 17:54:01 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vsim -t 1ps +transport_int_delays +transport_path_delays -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs="+acc"  cpu_tb
+ModelSim-Altera Info: # vsim -t 1ps "+transport_int_delays" "+transport_path_delays" -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs=""+acc"" cpu_tb 
+ModelSim-Altera Info: # Start time: 17:52:30 on Apr 17,2018
+ModelSim-Altera Info: # Loading work.cpu_tb
+ModelSim-Altera Info: # Loading work.CPUCore
+ModelSim-Altera Info: # Loading work.InstructionFetcher
+ModelSim-Altera Info: # Loading work.Controller
+ModelSim-Altera Info: # Loading work.RegFile
+ModelSim-Altera Info: # Loading work.CP0Regs
+ModelSim-Altera Info: # Loading work.ALU
+ModelSim-Altera Info: # Loading work.DummyMem
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Too few port connections. Expected 13, found 8.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_reg'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataIn'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataOut'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_cmd'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Too few port connections. Expected 10, found 9.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/insFetcher File: /home/cfy/programs/final/project/src/InstructionFetcher.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Missing connection for port 'exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Too few port connections. Expected 24, found 18.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/cp0Regs File: /home/cfy/programs/final/project/src/CP0Regs.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3015) /home/cfy/programs/final/project/src/CPU.v(192): [PCDPC] - Port size (64) does not match connection size (32) for port 'result'. The port definition is at: /home/cfy/programs/final/project/src/ALU.v(11).
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/alu File: /home/cfy/programs/final/project/src/ALU.v
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # add wave *
+ModelSim-Altera Info: # view structure
+ModelSim-Altera Info: # .main_pane.structure.interior.cs.body.struct
+ModelSim-Altera Info: # view signals
+ModelSim-Altera Info: # .main_pane.objects.interior.cs.body.tree
+ModelSim-Altera Info: # run -all
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205         0 536936512
+ModelSim-Altera Info: # read register $ 0 and $ 1, data (         x) and (         x)
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205         42351038464
+ModelSim-Altera Info: # written data (        64) to register $ 1
+ModelSim-Altera Info: # read register $ 1 and $ 2, data (        64) and (         x)
+ModelSim-Altera Info: # read memory at address 00000040, data: 00000004
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205         82351104004
+ModelSim-Altera Info: # written data (         4) to register $ 2
+ModelSim-Altera Info: # read register $ 1 and $ 3, data (        64) and (         x)
+ModelSim-Altera Info: # read memory at address 00000044, data: 00000005
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205        12   4395040
+ModelSim-Altera Info: # written data (         5) to register $ 3
+ModelSim-Altera Info: # read register $ 2 and $ 3, data (         4) and (         5)
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205        162351104008
+ModelSim-Altera Info: # written data (         9) to register $ 2
+ModelSim-Altera Info: # read register $ 1 and $ 3, data (        64) and (         5)
+ModelSim-Altera Info: # read memory at address 00000048, data: 00000009
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205        20 272826369
+ModelSim-Altera Info: # written data (         9) to register $ 3
+ModelSim-Altera Info: # read register $ 2 and $ 3, data (         9) and (         9)
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205        282887909388
+ModelSim-Altera Info: # read register $ 1 and $ 2, data (        64) and (         9)
+ModelSim-Altera Info: # write memory 00000009 to address 0000004c
+ModelSim-Altera Info: #  1077889948344662900502087952094567605768576814446343449846090287895635235262245222680057101778043828406988486358020205        324294967295
+ModelSim-Altera Info: #  14958727983302819870377122359672567706030163585012753139087912107470391283922667344023037225593417837
+ModelSim-Altera Info: # ** Note: $stop    : /home/cfy/programs/final/project/tests/cpu_tb.v(107)
+ModelSim-Altera Info: #    Time: 4200 ns  Iteration: 0  Instance: /cpu_tb
+ModelSim-Altera Info: # Break in Module cpu_tb at /home/cfy/programs/final/project/tests/cpu_tb.v line 107
+ModelSim-Altera Info: 
+ModelSim-Altera Info: restart
+ModelSim-Altera Info: # Closing VCD file "dump.vcd"
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Too few port connections. Expected 13, found 8.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_reg'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataIn'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataOut'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_cmd'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Too few port connections. Expected 10, found 9.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/insFetcher File: /home/cfy/programs/final/project/src/InstructionFetcher.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Missing connection for port 'exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Too few port connections. Expected 24, found 18.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/cp0Regs File: /home/cfy/programs/final/project/src/CP0Regs.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3015) /home/cfy/programs/final/project/src/CPU.v(192): [PCDPC] - Port size (64) does not match connection size (32) for port 'result'. The port definition is at: /home/cfy/programs/final/project/src/ALU.v(11).
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/alu File: /home/cfy/programs/final/project/src/ALU.v
+ModelSim-Altera Info: do final-1_run_msim_gate_verilog.do
+ModelSim-Altera Info: # transcript on
+ModelSim-Altera Info: # if {[file exists gate_work]} {
+ModelSim-Altera Info: # 	vdel -lib gate_work -all
+ModelSim-Altera Info: # }
+ModelSim-Altera Info: # vlib gate_work
+ModelSim-Altera Info: # vmap work gate_work
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vmap 10.5b Lib Mapping Utility 2016.10 Oct  5 2016
+ModelSim-Altera Info: # vmap work gate_work 
+ModelSim-Altera Info: # Modifying /home/cfy/programs/quartus/main/modelsim_ase/linuxaloem/../modelsim.ini
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+. {final-1.vo}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:45 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+." final-1.vo 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:01
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/tests +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/tests/cpu_tb.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/tests" "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/tests/cpu_tb.v 
+ModelSim-Altera Info: # -- Compiling module DummyMem
+ModelSim-Altera Info: # -- Compiling module cpu_tb
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	cpu_tb
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/mmu.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/mmu.v 
+ModelSim-Altera Info: # -- Compiling module MMU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	MMU
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/InstructionFetcher.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/InstructionFetcher.v 
+ModelSim-Altera Info: # -- Compiling module InstructionFetcher
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	InstructionFetcher
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/ALU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/ALU.v 
+ModelSim-Altera Info: # -- Compiling module ALU
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	ALU
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/top.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/top.v 
+ModelSim-Altera Info: # -- Compiling module top
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	top
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/Controller.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/Controller.v 
+ModelSim-Altera Info: # -- Compiling module Controller
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	Controller
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CPU.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CPU.v 
+ModelSim-Altera Info: # -- Compiling module CPUCore
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CPUCore
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/RegFile.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/RegFile.v 
+ModelSim-Altera Info: # -- Compiling module RegFile
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	RegFile
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # vlog -vlog01compat -work work +incdir+/home/cfy/programs/final/project/src {/home/cfy/programs/final/project/src/CP0Regs.v}
+ModelSim-Altera Info: # Model Technology ModelSim - Intel FPGA Edition vlog 10.5b Compiler 2016.10 Oct  5 2016
+ModelSim-Altera Info: # Start time: 17:55:46 on Apr 17,2018
+ModelSim-Altera Info: # vlog -suppress 8885 -reportprogress 300 -vlog01compat -work work "+incdir+/home/cfy/programs/final/project/src" /home/cfy/programs/final/project/src/CP0Regs.v 
+ModelSim-Altera Info: # -- Compiling module CP0Regs
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # Top level modules:
+ModelSim-Altera Info: # 	CP0Regs
+ModelSim-Altera Info: # End time: 17:55:46 on Apr 17,2018, Elapsed time: 0:00:00
+ModelSim-Altera Info: # Errors: 0, Warnings: 0
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # vsim -t 1ps +transport_int_delays +transport_path_delays -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs="+acc"  cpu_tb
+ModelSim-Altera Info: # End time: 17:55:47 on Apr 17,2018, Elapsed time: 0:03:17
+ModelSim-Altera Info: # Errors: 4, Warnings: 48
+ModelSim-Altera Info: # vsim -t 1ps "+transport_int_delays" "+transport_path_delays" -L altera_ver -L cycloneive_ver -L gate_work -L work -voptargs=""+acc"" cpu_tb 
+ModelSim-Altera Info: # Start time: 17:55:47 on Apr 17,2018
+ModelSim-Altera Info: # Loading work.cpu_tb
+ModelSim-Altera Info: # Loading work.CPUCore
+ModelSim-Altera Info: # Loading work.InstructionFetcher
+ModelSim-Altera Info: # Loading work.Controller
+ModelSim-Altera Info: # Loading work.RegFile
+ModelSim-Altera Info: # Loading work.CP0Regs
+ModelSim-Altera Info: # Loading work.ALU
+ModelSim-Altera Info: # Loading work.DummyMem
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Too few port connections. Expected 13, found 8.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut File: /home/cfy/programs/final/project/src/CPU.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_reg'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataIn'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_dataOut'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_cmd'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/tests/cpu_tb.v(66): [TFMPC] - Missing connection for port 'mmu_exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Too few port connections. Expected 10, found 9.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/insFetcher File: /home/cfy/programs/final/project/src/InstructionFetcher.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(127): [TFMPC] - Missing connection for port 'exception'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3017) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Too few port connections. Expected 24, found 18.
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/cp0Regs File: /home/cfy/programs/final/project/src/CP0Regs.v
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'in_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_status'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_cause'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3722) /home/cfy/programs/final/project/src/CPU.v(169): [TFMPC] - Missing connection for port 'we_badVAddr'.
+ModelSim-Altera Warning: # ** Warning: (vsim-3015) /home/cfy/programs/final/project/src/CPU.v(192): [PCDPC] - Port size (64) does not match connection size (32) for port 'result'. The port definition is at: /home/cfy/programs/final/project/src/ALU.v(11).
+ModelSim-Altera Info: #    Time: 0 ps  Iteration: 0  Instance: /cpu_tb/uut/alu File: /home/cfy/programs/final/project/src/ALU.v
+ModelSim-Altera Info: # 
+ModelSim-Altera Info: # add wave *
+ModelSim-Altera Info: # view structure
+ModelSim-Altera Info: # .main_pane.structure.interior.cs.body.struct
+ModelSim-Altera Info: # view signals
+ModelSim-Altera Info: # .main_pane.objects.interior.cs.body.tree
+ModelSim-Altera Info: # run -all
+ModelSim-Altera Info: # execute memory at address 00000000, data: 20010040
+ModelSim-Altera Info: # read register $ 0 and $ 1, data (         x) and (         x)
+ModelSim-Altera Info: # execute memory at address 00000004, data: 8c220000
+ModelSim-Altera Info: # written data (        64) to register $ 1
+ModelSim-Altera Info: # read register $ 1 and $ 2, data (        64) and (         x)
+ModelSim-Altera Info: # read memory at address 00000040, data: 00000004
+ModelSim-Altera Info: # execute memory at address 00000008, data: 8c230004
+ModelSim-Altera Info: # written data (         4) to register $ 2
+ModelSim-Altera Info: # read register $ 1 and $ 3, data (        64) and (         x)
+ModelSim-Altera Info: # read memory at address 00000044, data: 00000005
+ModelSim-Altera Info: # execute memory at address 0000000c, data: 00431020
+ModelSim-Altera Info: # written data (         5) to register $ 3
+ModelSim-Altera Info: # read register $ 2 and $ 3, data (         4) and (         5)
+ModelSim-Altera Info: # execute memory at address 00000010, data: 8c230008
+ModelSim-Altera Info: # written data (         9) to register $ 2
+ModelSim-Altera Info: # read register $ 1 and $ 3, data (        64) and (         5)
+ModelSim-Altera Info: # read memory at address 00000048, data: 00000009
+ModelSim-Altera Info: # execute memory at address 00000014, data: 10430001
+ModelSim-Altera Info: # written data (         9) to register $ 3
+ModelSim-Altera Info: # read register $ 2 and $ 3, data (         9) and (         9)
+ModelSim-Altera Info: # execute memory at address 0000001c, data: ac22000c
+ModelSim-Altera Info: # read register $ 1 and $ 2, data (        64) and (         9)
+ModelSim-Altera Info: # write memory 00000009 to address 0000004c
+ModelSim-Altera Info: # execute memory at address 00000020, data: ffffffff
+ModelSim-Altera Info: # Last instruction reached, exit.
+ModelSim-Altera Info: # ** Note: $stop    : /home/cfy/programs/final/project/tests/cpu_tb.v(107)
+ModelSim-Altera Info: #    Time: 4200 ns  Iteration: 0  Instance: /cpu_tb
+ModelSim-Altera Info: # Break in Module cpu_tb at /home/cfy/programs/final/project/tests/cpu_tb.v line 107
+ModelSim-Altera Info: # End time: 17:56:05 on Apr 17,2018, Elapsed time: 0:00:18
+ModelSim-Altera Info: # Errors: 0, Warnings: 16
+Error: Errors encountered while running modelsim do file
+Error: NativeLink simulation flow was NOT successful
+
+
+
+================The following additional information is provided to help identify the cause of error while running nativelink scripts=================
+Nativelink TCL script failed with errorCode:  1
+Nativelink TCL script failed with errorInfo:  1
+    (procedure "launch_sim" line 1)
+    invoked from within
+"launch_sim launch_args_hash"
+    ("eval" body line 1)
+    invoked from within
+"eval launch_sim launch_args_hash"
+    invoked from within
+"if [ info exists ::errorCode ] {
+                set savedCode $::errorCode
+                set savedInfo $::errorInfo
+                error $result $..."
+    invoked from within
+"if [catch {eval launch_sim launch_args_hash} result ] {
+            set status 1
+            if [ info exists ::errorCode ] {
+                set save..."
+    (procedure "run_sim" line 74)
+    invoked from within
+"run_sim run_sim_args_hash"
+    invoked from within
+"if [ info exists ::errorCode ] {
+            set savedCode $::errorCode
+            set savedInfo $::errorInfo
+            error "$result" $savedInfo ..."
+    (procedure "run_eda_simulation_tool" line 334)
+    invoked from within
+"run_eda_simulation_tool eda_opts_hash"

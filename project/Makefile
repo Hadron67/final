@@ -18,6 +18,7 @@ SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 
 INC_DIR=src/
 IV=iverilog
+IV_DEFS=-DOUT_DIR=\"$(SIM_OUTDIR)\" -D__IV
 VVP=vvp -n
 
 SIM_SOURCE_DIR=tests
@@ -37,7 +38,7 @@ all: $(SIM_TARGETS:%=%_sim)
 	$(VVP) $<
 
 $(SIM_OUTDIR)/%_tb.out: $(SOURCE) $(SIM_SOURCE_DIR)/%_tb.v
-	$(IV) -o $@ -s $(@:$(SIM_OUTDIR)/%.out=%) -I $(INC_DIR) -DOUT_DIR=\"$(SIM_OUTDIR)\" $(SOURCE) $(@:$(SIM_OUTDIR)/%.out=$(SIM_SOURCE_DIR)/%.v)
+	$(IV) -o $@ -s $(@:$(SIM_OUTDIR)/%.out=%) -I $(INC_DIR) $(IV_DEFS) $(SOURCE) $(@:$(SIM_OUTDIR)/%.out=$(SIM_SOURCE_DIR)/%.v)
 
 .SECONDARY: $(SIM_TARGETS:%=$(SIM_OUTDIR)/%_tb.out)
 .PHONY: clean sandwitch default
