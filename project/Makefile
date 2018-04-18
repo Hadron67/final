@@ -12,13 +12,14 @@ CP0Regs.v \
 RegFile.v \
 random32.v \
 encoder.v \
-CPU_MMU.v
+CPU_MMU.v \
+ExceptionControl.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 
 INC_DIR=src/
 IV=iverilog
-IV_DEFS=-DOUT_DIR=\"$(SIM_OUTDIR)\" -D__IV
+IV_DEFS=-DOUT_DIR=\"$(SIM_OUTDIR)\" -D__IV -DELF_DIR=\"elf\"
 VVP=vvp -n
 
 SIM_SOURCE_DIR=tests

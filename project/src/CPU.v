@@ -5,17 +5,19 @@
 `include "ALUOp.vh"
 `include "opcode.vh"
 `include "mmu.vh"
+`include "CPU.vh"
 
 module CPUCore(
     input wire clk,
     input wire res,
-    output wire hlt,
     
     input wire [31:0] db_dataIn,
     input wire db_ready,
     output wire [31:0] db_dataOut,
+    output wire db_signed,
     output reg [31:0] db_addr,
     output reg `MEM_ACCESS_T db_accessType,
+    output reg `MEM_LEN db_memLen,
 
     output wire `MMU_REG_T mmu_reg,
     output wire [31:0] mmu_dataIn,
@@ -29,7 +31,8 @@ module CPUCore(
     localparam S_READ_MEM          = 4'd4;
     localparam S_WRITE_MEM         = 4'd5;
     localparam S_EXCEPTION         = 4'd6;
-    localparam S_HLT               = 4'd7;
+    localparam S_SAVE_INSTRUCTION  = 4'd8;
+    localparam S_SAVE_PC           = 4'd9;
 
     integer i;
     reg [31:0] insReg;
@@ -41,29 +44,34 @@ module CPUCore(
     wire [31:0] dataIn;
     wire overflow, zero;
     reg [31:0] regIn;
+    reg [31:0] aluA, aluB;
+    reg [4:0] regDest;
 
-    wire isLastIns;
-    wire aluSrcA, aluSrcB;
+    wire nop;
+    wire `MEM_LEN accessMemLen;
+    wire `CPU_ALU_SRC_A aluSrcA;
+    wire `CPU_ALU_SRC_B aluSrcB;
     // prepare all the signals according to next state
     reg [3:0] state, nextState;
     wire `ALUOP_T aluOptr;
-    wire aluOverflow, regDest, extOp, writeReg;
-    wire [1:0] writeRegSrc;
+    wire aluOverflow, extOp, writeReg;
+    wire `CPU_WRITE_REG_DEST_SRC regDestSrc;
+    wire `CPU_WRITE_REG_SRC writeRegSrc;
     wire writeMem, readMem;
     wire jmp, branch;
     wire writeCP0, readCP0;
     wire isTlbOp, eret;
     
-    reg [31:0] pc; 
-    wire [31:0] nextpc;
+    reg [31:0] pc;
+    wire [31:0] nextpc, linkpc;
     reg [63:0] acc;
     wire [7:0] cp0RegDesc;
     wire [31:0] cp0RegOut;
     wire [5:0] tlbOp;
     wire readMMUReg, writeMMUReg;
     wire [31:0] cp0_epc, cp0_status, cp0_cause, cp0_badVAddr;
+    reg `CPU_MODE_T cpuMode;
 
-    assign hlt = nextState == S_HLT;
     assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
     assign rs = ins[25:21];
     assign rt = ins[20:16];
@@ -72,6 +80,7 @@ module CPUCore(
     assign imm = ins[15:0];
     assign tlbOp = ins[5:0];
     assign cp0RegDesc = {rd, ins[2:0]};
+    assign linkpc = pc + 32'd8;
 
     assign db_dataOut = regOutB;
     assign dataIn = db_dataIn;
@@ -79,10 +88,32 @@ module CPUCore(
     // multiplexer for registers input
     always @* begin: mux_registerInput
         case(writeRegSrc)
-            2'd0: regIn = aluOut;
-            2'd1: regIn = dataIn;
-            2'd2: regIn = cp0RegOut;
+            `CPU_WRITE_REG_SRC_ALU: regIn = aluOut;
+            `CPU_WRITE_REG_SRC_MEM: regIn = dataIn;
+            `CPU_WRITE_REG_SRC_CP0REG: regIn = cp0RegOut;
+            `CPU_WRITE_REG_SRC_IMM: regIn = imm << 16;
             default: regIn = 32'dx;
+        endcase
+    end
+    always @* begin
+        case(aluSrcA)
+            `CPU_ALU_SRC_A_REGA:  aluA = regOutA;
+            `CPU_ALU_SRC_A_SHAMT: aluA = shamt;
+            default: aluA = 32'dx;
+        endcase
+    end
+    always @* begin
+        case(aluSrcB)
+            `CPU_ALU_SRC_B_REGB: aluB = regOutB;
+            `CPU_ALU_SRC_B_IMM:  aluB = { {16{extOp ? imm[15] : 1'b0}}, imm };
+            default: aluB = 32'dx;
+        endcase
+    end
+    always @* begin
+        case(regDestSrc)
+            `CPU_WRITE_REG_DEST_SRC_RT: regDest = rt;
+            `CPU_WRITE_REG_DEST_SRC_RD: regDest = rd;
+            default: regDest = 5'dx;
         endcase
     end
     // data address
@@ -104,6 +135,20 @@ module CPUCore(
             default:             db_accessType = `MEM_ACCESS_NONE;
         endcase
     end
+    always @* begin
+        if(nextState == S_FETCH_INSTRUCTION)
+            db_memLen = `MEM_LEN_W;
+        else
+            db_memLen = accessMemLen;
+    end
+    always @* begin
+        case(cp0_status[4:3])
+            2'b0: cpuMode = cp0_status[2:1] == 2'b11 ? `CPU_MODE_KERNEL : 2'dx;
+            2'b01: cpuMode = cp0_status[2:1] == 2'b00 ? `CPU_MODE_SUPERVISOR : 2'dx;
+            2'b10: cpuMode = cp0_status[2:1] == 2'b00 ? `CPU_MODE_USER : 2'dx;
+            default: cpuMode = 2'dx;
+        endcase
+    end
     always @* begin: mux_tlbOp
         if(isTlbOp && nextState == S_FETCH_INSTRUCTION) begin
             case(tlbOp)
@@ -123,7 +168,35 @@ module CPUCore(
         else
             mmu_cmd = `MMU_CMD_NONE;
     end
-    
+    // combinational logic to get next state to go.
+    always @* begin: getNextState
+        case(state)
+            S_INITIAL: nextState = S_FETCH_INSTRUCTION;
+            S_FETCH_INSTRUCTION: 
+                if(mmu_exception != `MMU_EXCEPTION_NONE) begin
+                    nextState = S_EXCEPTION;
+                end 
+                else if(db_ready)
+                    if(isTlbOp || nop)
+                        nextState = S_FETCH_INSTRUCTION;
+                    else
+                        nextState = S_EXEC;
+                else 
+                    nextState = S_FETCH_INSTRUCTION;
+            S_EXEC:
+                if(readMem)
+                    nextState = S_READ_MEM;
+                else if(writeMem)
+                    nextState = S_WRITE_MEM;
+                else
+                    nextState = S_FETCH_INSTRUCTION;
+            S_READ_MEM:  nextState = db_ready ? S_FETCH_INSTRUCTION : S_READ_MEM;
+            S_WRITE_MEM: nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
+            // TODO: process exceptions
+            S_EXCEPTION: nextState = S_FETCH_INSTRUCTION;
+        endcase
+    end
+
     InstructionFetcher insFetcher (
         .branch(branch),
         .jmp(jmp),
@@ -137,12 +210,14 @@ module CPUCore(
     );
     Controller ctl(
         .ins(ins),
-        .isLastIns(isLastIns),
+        .nop(nop),
         .aluSrcA(aluSrcA),
         .aluSrcB(aluSrcB),
         .aluOptr(aluOptr),
+        .db_signed(db_signed),
+        .accessMemLen(accessMemLen),
         .aluOverflow(aluOverflow),
-        .regDest(regDest),
+        .regDestSrc(regDestSrc),
         .extOp(extOp),
         .writeReg(writeReg),
         .writeRegSrc(writeRegSrc),
@@ -159,7 +234,7 @@ module CPUCore(
         .clk(clk),
         .regA(rs),
         .regB(rt),
-        .regW(regDest == 0 ? rd : rt),
+        .regW(regDest),
         .dataIn(regIn),
         .outA(regOutA),
         .outB(regOutB),
@@ -192,44 +267,12 @@ module CPUCore(
     ALU alu (
         .optr(aluOptr),
         .overflowTrap(aluOverflow),
-        .A(aluSrcA == 0 ? regOutA : shamt),
-        .B(aluSrcB == 0 ? regOutB : { {16{extOp ? imm[15] : 1'b0}}, imm }),
+        .A(aluA),
+        .B(aluB),
         .z(zero),
         .overflow(overflow),
         .result(aluOut)
     );
-
-    // combinational logic to get next state to go.
-    always @* begin: getNextState
-        case(state)
-            S_INITIAL: nextState = S_FETCH_INSTRUCTION;
-            S_FETCH_INSTRUCTION: 
-                if(mmu_exception != `MMU_EXCEPTION_NONE) begin
-                    nextState = S_EXCEPTION;
-                end 
-                else if(db_ready)
-                    if(isTlbOp)
-                        nextState = S_FETCH_INSTRUCTION;
-                    else if(isLastIns)
-                        nextState = S_HLT;
-                    else
-                        nextState = S_EXEC;
-                else 
-                    nextState = S_FETCH_INSTRUCTION;
-            S_EXEC:
-                if(readMem)
-                    nextState = S_READ_MEM;
-                else if(writeMem)
-                    nextState = S_WRITE_MEM;
-                else
-                    nextState = S_FETCH_INSTRUCTION;
-            S_READ_MEM:  nextState = db_ready ? S_FETCH_INSTRUCTION : S_READ_MEM;
-            S_WRITE_MEM: nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
-            S_HLT: nextState = S_HLT;
-            // TODO: process exceptions
-            S_EXCEPTION: nextState = S_FETCH_INSTRUCTION;
-        endcase
-    end
     
     // pc and instruction ff
     always @(posedge clk or posedge res) begin: ff_pc

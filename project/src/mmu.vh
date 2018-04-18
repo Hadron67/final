@@ -10,7 +10,6 @@
 `define MMU_REG_PAGEMASK 4'd6
 `define MMU_REG_WIRED    4'd7
 `define MMU_REG_ENTRYHI  4'd8
-
 `define MMU_REG_T [3:0]
 
 `define MMU_CMD_NONE              4'd0
@@ -21,14 +20,13 @@
 `define MMU_CMD_PROB_TLB          4'd5
 // `define MMU_CMD_CONVERT_ADDR      4'd6
 `define MMU_CMD_READ_TLB          4'd7
-
 `define MMU_CMD_T [3:0]
 
 `define MMU_EXCEPTION_NONE        3'd0
 `define MMU_EXCEPTION_TLBMISS     3'd1
-`define MMU_EXCEPTION_TLBINVALID  3'd2
-`define MMU_EXCEPTION_TLBMODIFIED 3'd3
-
+`define MMU_EXCEPTION_TLBL        3'd2
+`define MMU_EXCEPTION_TLBS        3'd3
+`define MMU_EXCEPTION_TLBMODIFIED 3'd4
 `define MMU_EXCEPTION_T [2:0]
 
 `endif

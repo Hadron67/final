@@ -1,20 +1,34 @@
 `include "opcode.vh"
 `include "DataBus.vh"
 `include "font.vh"
+`include "log.vh"
 `timescale 1ns/1ns
-module DummyMem(
+module DummyMem #(
+    parameter MEM_SIZE = 2048
+) (
     input wire clk, res,
     input wire [31:0] db_dataOut, db_addr,
-    input wire [1:0] db_accessType,
+    input wire `MEM_ACCESS_T db_accessType,
+    input wire `MEM_LEN db_memLen,
+    input wire db_signed,
     output wire db_ready,
-    output wire [31:0] db_dataIn
+    output wire [31:0] db_dataIn,
+    output reg hlt
 );
-    reg [31:0] mem[127:0], dataOut;
+    reg [7:0] mem[MEM_SIZE - 1:0];
+    reg [31:0] dataOut;
+    reg [31:0] temp;
     wire [31:0] dataIn;
+    wire [7:0] r_b;
+    wire [15:0] r_h;
+    wire [31:0] r_w;
 
     assign dataIn = db_dataOut;
     assign db_ready = 1'b1; // always be ready
     assign db_dataIn = dataOut;
+    assign r_b = mem[db_addr];
+    assign r_h = {mem[db_addr], mem[db_addr + 1]};
+    assign r_w = {mem[db_addr], mem[db_addr + 1], mem[db_addr + 2], mem[db_addr + 3]};
 
     always @(posedge clk or posedge res) begin
         if(res) begin
@@ -22,34 +36,30 @@ module DummyMem(
         end else begin
             case(db_accessType)
                 `MEM_ACCESS_R: begin
-                    $display("read memory at address %x, data: %x", db_addr, mem[db_addr[11:2]]);
-                    dataOut <= mem[db_addr[11:2]];
+                    $display("read memory at address %x, data: %x", db_addr, r_w);
+                    dataOut <= r_w;
                 end
                 `MEM_ACCESS_W: begin
                     $display("write memory %x to address %x", dataIn, db_addr);
-                    mem[db_addr[11:2]] <= dataIn;
+                    if(db_addr == 32'hbfffffff)
+                        hlt <= 1'b1;
+                    else
+                        {mem[db_addr], mem[db_addr + 1], mem[db_addr + 2], mem[db_addr + 3]} <= dataIn;
                 end
                 `MEM_ACCESS_X: begin
-                    $display(`FONT_YELLOW("execute memory at address %x, data: %x"), db_addr, mem[db_addr[11:2]]);
-                    dataOut <= mem[db_addr[11:2]];
+                    $display(`FONT_YELLOW("execute memory at address %x, data: %x"), db_addr, r_w);
+                    dataOut <= r_w;
                 end
             endcase
         end
     end
+    integer file;
+    integer i;
     initial begin
-        mem[0] = {`OPCODE_ADDI, 5'd0, 5'd1, 16'd64};       //addi $1, $0, 64
-        mem[1] = {`OPCODE_LW, 5'd1, 5'd2, 16'd0};          //lw $2, 0($1)
-        mem[2] = 32'b100011_00001_00011_0000000000000100;  //lw $3,4($1)
-        mem[3] = 32'b000000_00010_00011_00010_00000_100000;//add $2,$2,$3
-        mem[4] = 32'b100011_00001_00011_0000000000001000;  //lw $3,8($1)
-        mem[5] = 32'b000100_00010_00011_0000000000000001;  //beq $2,$3,1
-        mem[6] = 32'b101011_00001_00000_0000000000001100;  //sw $0,12($1)
-        mem[7] = 32'b101011_00001_00010_0000000000001100;  //sw $2,12($1)
-        mem[8] = ~32'b0;
-
-        mem[16] = 32'd4;
-        mem[17] = 32'd5;
-        mem[18] = 32'd9;
+        hlt = 1'b0;
+        file = $fopen({`ELF_DIR, "/test/test.bin"}, "rb");
+        i = $fread(mem, file);
+        $fclose(file);
     end
 endmodule
 
@@ -61,9 +71,21 @@ module cpu_tb();
 
     wire [31:0] db_dataIn, db_dataOut, db_addr; 
     wire `MEM_ACCESS_T db_accessType;
-    wire db_ready;
+    wire `MEM_LEN db_memLen;
+    wire db_ready, db_signed;
     
     CPUCore uut(
+        .clk(clk),
+        .res(res),
+        .db_dataIn(db_dataIn),
+        .db_dataOut(db_dataOut),
+        .db_addr(db_addr),
+        .db_ready(db_ready),
+        .db_accessType(db_accessType),
+        .db_memLen(db_memLen),
+        .db_signed(db_signed)
+    );
+    DummyMem mem(
         .clk(clk),
         .res(res),
         .hlt(hlt),
@@ -71,16 +93,9 @@ module cpu_tb();
         .db_dataOut(db_dataOut),
         .db_addr(db_addr),
         .db_ready(db_ready),
-        .db_accessType(db_accessType)
-    );
-    DummyMem mem(
-        .clk(clk),
-        .res(res),
-        .db_dataIn(db_dataIn),
-        .db_dataOut(db_dataOut),
-        .db_addr(db_addr),
-        .db_ready(db_ready),
-        .db_accessType(db_accessType)
+        .db_accessType(db_accessType),
+        .db_memLen(db_memLen),
+        .db_signed(db_signed)
     );
     MMU m();
     initial begin
@@ -102,13 +117,13 @@ module cpu_tb();
     end
     always begin
         if(hlt) begin
-            $display(`FONT_GREEN("Last instruction reached, exit."));
+            $display(`FONT_GREEN("exit command received, exit."));
             $dumpflush;
             $stop();
         end 
         clk1 <= ~clk1;
         if(clkEnable)
             clk <= clk1;
-        #100;
+        #1000;
     end
 endmodule

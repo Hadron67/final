@@ -96,6 +96,7 @@ set_global_assignment -name VERILOG_FILE src/CPU.v
 set_global_assignment -name VERILOG_FILE src/CP0RegNum.v
 set_global_assignment -name VERILOG_FILE src/Controller.v
 set_global_assignment -name VERILOG_FILE src/ALU.v
+set_global_assignment -name VERILOG_FILE src/ExceptionControl.v
 set_global_assignment -name BDF_FILE cpu.bdf
 set_global_assignment -name EDA_TEST_BENCH_FILE tests/cpu_tb.v -section_id cpu_tb
 set_global_assignment -name SEARCH_PATH src/

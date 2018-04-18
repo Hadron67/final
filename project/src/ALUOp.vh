@@ -5,7 +5,6 @@
 
 `define ALUOP_NONE      5'd0
 `define ALUOP_PLUS      5'd1
-`define ALUOP_PLUSU     5'd2
 `define ALUOP_MINUS     5'd3
 `define ALUOP_MINUSU    5'd4
 `define ALUOP_TIMES     5'd5

@@ -47,12 +47,15 @@ module MMU #(
     end
 
     always @* begin
-        if(!valid)
-            exceptionReg = `MMU_EXCEPTION_TLBINVALID;
+        if(~found)
+            exceptionReg = `MMU_EXCEPTION_TLBMISS;
+        else if(!valid)
+            if(mmu_accessType == `MEM_ACCESS_W)
+                exceptionReg = `MMU_EXCEPTION_TLBS;
+            else
+                exceptionReg = `MMU_EXCEPTION_TLBL;
         else if(dirty && mmu_accessType == `MEM_ACCESS_W)
             exceptionReg = `MMU_EXCEPTION_TLBMODIFIED;
-        else if(~found)
-            exceptionReg = `MMU_EXCEPTION_TLBMISS;
         else
             exceptionReg = `MMU_EXCEPTION_NONE;
     end
