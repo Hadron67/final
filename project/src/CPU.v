@@ -10,6 +10,7 @@
 module CPUCore(
     input wire clk,
     input wire res,
+    output reg `CPU_MODE_T cpuMode,
     
     input wire [31:0] db_dataIn,
     input wire db_ready,
@@ -70,7 +71,6 @@ module CPUCore(
     wire [5:0] tlbOp;
     wire readMMUReg, writeMMUReg;
     wire [31:0] cp0_epc, cp0_status, cp0_cause, cp0_badVAddr;
-    reg `CPU_MODE_T cpuMode;
 
     assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
     assign rs = ins[25:21];
@@ -160,7 +160,7 @@ module CPUCore(
         endcase
     end
     always @* begin: mux_tlbOp
-        if(isTlbOp && nextState == S_FETCH_INSTRUCTION) begin
+        if(isTlbOp && state == S_FETCH_INSTRUCTION) begin
             case(tlbOp)
                 // `TLBOP_TLBINV: 
                 // `TLBOP_TLBINVF:
@@ -291,7 +291,8 @@ module CPUCore(
     always @(posedge clk or posedge res) begin: ff_pc
         if(res) begin
             state <= S_INITIAL;
-            pc <= 0;
+            pc <= 32'h80000000;
+            // pc <= 0;
         end 
         else begin
             if(state == S_FETCH_INSTRUCTION && db_ready)

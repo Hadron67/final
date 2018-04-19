@@ -1,13 +1,16 @@
 `include "DataBus.vh"
 `include "mmu.vh"
+`include "CPU.vh"
 
 module MMU #(
     parameter ENTRY_ADDR_WIDTH = 4
 ) (
     input wire clk, res,
     input wire addrValid,
+    input wire `CPU_MODE cpuMode,
     input wire [31:0] vAddr,
-    output reg [31:0] pAddr,
+    output wire [31:0] pAddr,
+    output wire db_io,
 
     input wire `MMU_REG_T mmu_reg,
     input wire `MEM_ACCESS_T mmu_accessType,
@@ -28,15 +31,18 @@ module MMU #(
     reg [31:0] reg_pageMask;
     reg [31:0] reg_wired;
     reg [31:0] reg_entryHi;
+    reg [31:0] vAddrLatch;
     wire [31:0] tlbOut_entryHi, tlbOut_entryLo0, tlbOut_entryLo1, tlbOut_pageMask, tlbOut_index;
     wire found, valid, dirty;
 
-    wire writeTlb;
-    wire [31:0] pAddrReg;
+    wire writeTlb, mapped;
+    wire [31:0] tlbAddrOut;
     reg [31:0] tlbWriteIndex;
-    reg `MMU_EXCEPTION_T exceptionReg;
 
     assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
+    assign pAddr = mapped ? tlbAddrOut : {1'b0, vAddrLatch[30:0]};
+    assign mapped = vAddrLatch[31:30] != 2'b10;
+    assign db_io = vAddrLatch[31:29] == 3'b101;
 
     always @* begin
         case(mmu_cmd)
@@ -47,17 +53,20 @@ module MMU #(
     end
 
     always @* begin
-        if(~found)
-            exceptionReg = `MMU_EXCEPTION_TLBMISS;
-        else if(!valid)
-            if(mmu_accessType == `MEM_ACCESS_W)
-                exceptionReg = `MMU_EXCEPTION_TLBS;
+        if(mapped)
+            if(~found)
+                mmu_exception = `MMU_EXCEPTION_TLBMISS;
+            else if(!valid)
+                if(mmu_accessType == `MEM_ACCESS_W)
+                    mmu_exception = `MMU_EXCEPTION_TLBS;
+                else
+                    mmu_exception = `MMU_EXCEPTION_TLBL;
+            else if(dirty && mmu_accessType == `MEM_ACCESS_W)
+                mmu_exception = `MMU_EXCEPTION_TLBMODIFIED;
             else
-                exceptionReg = `MMU_EXCEPTION_TLBL;
-        else if(dirty && mmu_accessType == `MEM_ACCESS_W)
-            exceptionReg = `MMU_EXCEPTION_TLBMODIFIED;
+                mmu_exception = `MMU_EXCEPTION_NONE;
         else
-            exceptionReg = `MMU_EXCEPTION_NONE;
+            mmu_exception = `MMU_EXCEPTION_NONE;
     end
 
     TLB #(
@@ -65,8 +74,8 @@ module MMU #(
     ) tlb (
         .clk(clk),
         .res(res),
-        .vAddr(mmu_cmd == `MMU_CMD_PROB_TLB ? {reg_entryHi[31:13], {12{1'b0}}} : vAddr),
-        .pAddr(pAddrReg),
+        .vAddr(mmu_cmd == `MMU_CMD_PROB_TLB ? {reg_entryHi[31:13], {12{1'b0}}} : vAddrLatch),
+        .pAddr(tlbAddrOut),
         .entryHiIn(reg_entryHi),
         .entryLo0In(reg_entryLo0),
         .entryLo1In(reg_entryLo1),
@@ -88,8 +97,9 @@ module MMU #(
 
     always @(posedge clk) begin
         if(addrValid) begin
-            pAddr <= pAddrReg;
-            mmu_exception <= exceptionReg;
+            // pAddr <= pAddrReg;
+            // mmu_exception <= exceptionReg;
+            vAddrLatch <= vAddr;
         end
     end
 

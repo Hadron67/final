@@ -7,7 +7,7 @@ module CPU_MMU(
     input wire [31:0] db_dataIn,
     output wire [31:0] db_dataOut, db_addr,
     output reg [31:0] vAddr,
-    input wire db_ready,
+    input wire db_ready, db_io,
     output wire `MEM_ACCESS_T db_accessType,
     output wire `MEM_LEN db_memLen
 );
@@ -29,13 +29,12 @@ module CPU_MMU(
 
     wire accessMem;
 
-    assign accessMem = 
-        db2_accessType == `MEM_ACCESS_W || 
-        db2_accessType == `MEM_ACCESS_R || 
+    assign accessMem =
+        db2_accessType == `MEM_ACCESS_W ||
+        db2_accessType == `MEM_ACCESS_R ||
         db2_accessType == `MEM_ACCESS_X;
     assign db_accessType = state == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
     assign db2_ready = state == S_IDLE || state == S_ACCESS_MEM && db_ready;
-    // assign db2_ready = nextState == S_IDLE;
     
     always @* begin: getNextState
         case(state)
@@ -46,7 +45,11 @@ module CPU_MMU(
                     nextState = S_IDLE;
             end
             S_SAVE_ADDR: nextState = S_ACCESS_MEM;
-            S_ACCESS_MEM: nextState = db_ready ? S_IDLE : S_ACCESS_MEM;
+            S_ACCESS_MEM: 
+                if(mmu_exception != `MMU_EXCEPTION_NONE)
+                    nextState = S_IDLE;
+                else
+                    nextState = db_ready ? S_IDLE : S_ACCESS_MEM;
         endcase
     end
 
@@ -71,9 +74,10 @@ module CPU_MMU(
     MMU mmu (
         .clk(clk),
         .res(res),
-        .addrValid(nextState == S_ACCESS_MEM),
-        .vAddr(vAddr),
+        .addrValid(nextState == S_SAVE_ADDR),
+        .vAddr(db2_addr),
         .pAddr(db_addr),
+        .db_io(db_io),
 
         .mmu_reg(mmu_reg),
         .mmu_dataIn(mmu_dataIn),

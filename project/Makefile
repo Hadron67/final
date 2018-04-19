@@ -28,7 +28,8 @@ SIM_OUTDIR=simulation/vvp
 SIM_TARGETS=\
 cpu \
 mmu \
-encoder
+encoder \
+mmu_cpu
 
 ifeq ($(DEBUG), true)
 	IV_DEFS += -DDEBUG_DISPLAY

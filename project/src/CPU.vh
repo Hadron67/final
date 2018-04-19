@@ -24,7 +24,7 @@
 `define CPU_MODE_KERNEL     2'd0
 `define CPU_MODE_SUPERVISOR 2'd1
 `define CPU_MODE_USER       2'd2
-`define CPU_MODE_T [1:0]
+`define CPU_MODE [1:0]
 
 `define CPU_EXCEPTION_INT   5'd0
 `define CPU_EXCEPTION_MOD   5'd1

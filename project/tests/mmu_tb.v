@@ -125,7 +125,7 @@ module mmu_tb();
             #100;
             addrValid = 1'b0;
             if(mmu_exception != `MMU_EXCEPTION_NONE) begin
-                $display("%x -> exception %x -- %s", va, mmu_exception, mmu_exception == expectedException ? "passed" : "failed!");
+                $display("%x -> exception %x -- %s", va, mmu_exception, (mmu_exception == expectedException ? "passed" : "failed!"));
             end
             else
                 $display("%x -> %x -- %s", va, pAddr, pAddr == expected ? "passed" : "failed!");
@@ -163,6 +163,7 @@ module mmu_tb();
         testAddr({19'd3, 1'b0, 12'd14}, {1'b0, 19'd70, 12'd14}, `MMU_EXCEPTION_NONE);
         testAddr({19'd4, 1'b0, 12'd19}, {1'b0, 19'd100, 12'd19}, `MMU_EXCEPTION_NONE);
         testAddr({19'd3, 1'b1, 12'd19}, {1'b0, 19'd80, 12'd19}, `MMU_EXCEPTION_NONE);
+        testAddr(32'h81234567, 32'h01234567, `MMU_EXCEPTION_NONE);// umapped
         mmu_accessType = `MEM_ACCESS_W;
         testAddr({19'd1, 1'b1, 12'd12}, 32'dx, `MMU_EXCEPTION_TLBS);
         mmu_accessType = `MEM_ACCESS_R;

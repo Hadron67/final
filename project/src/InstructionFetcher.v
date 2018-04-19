@@ -1,10 +1,10 @@
 module InstructionFetcher(
-    input  wire [31:0] pc, epc, ra,
-    input  wire branch,
-    input  wire jmp,
-    input  wire z,
-    input  wire [25:0] target,
-    input  wire [15:0] imm,
+    input wire [31:0] pc, epc, ra,
+    input wire branch,
+    input wire jmp,
+    input wire z,
+    input wire [25:0] target,
+    input wire [15:0] imm,
     input wire jr,
     input wire exception, eret,
     output wire [31:0] nextpc
