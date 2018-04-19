@@ -30,6 +30,10 @@ cpu \
 mmu \
 encoder
 
+ifeq ($(DEBUG), true)
+	IV_DEFS += -DDEBUG_DISPLAY
+endif
+
 default:
 	@echo "You must specify what to run." && exit 1;
 

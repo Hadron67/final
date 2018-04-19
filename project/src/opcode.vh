@@ -58,6 +58,8 @@
 `define FUNC_SLT   6'd42
 `define FUNC_SLTU  6'd43
 
+`define BRANCH_BGEZAL 5'd17
+
 `define TLBOP_NONE     6'd0
 `define TLBOP_TLBINV   6'd3
 `define TLBOP_TLBINVF  6'd4

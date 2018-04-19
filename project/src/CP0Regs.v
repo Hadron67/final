@@ -52,37 +52,53 @@ module CP0Regs(
         if(!isMMU) begin
             if(we && rd == 5'd8 || we_badVAddr) begin
                 cp0_badVAddr <= dataIn;
+                `ifdef DEBUG_DISPLAY
                 $display("written cp0 register 'BadVAddr', data %x", dataIn);
+                `endif
             end
             if(we && rd == 5'd12 || we_status) begin
                 cp0_status <= dataIn;
+                `ifdef DEBUG_DISPLAY
                 $display("written cp0 register 'Status', data %x", dataIn);
+                `endif
             end
             if(we && rd == 5'd13 || we_cause) begin
                 cp0_cause <= dataIn;
+                `ifdef DEBUG_DISPLAY
                 $display("written cp0 register 'Cause', data %x", dataIn);
+                `endif
             end
             if(we && rd == 5'd14 || we_epc) begin
                 cp0_epc <= dataIn;
+                `ifdef DEBUG_DISPLAY
                 $display("written cp0 register 'EPC', data %x", dataIn);
+                `endif
             end
             if(re) begin
                 case(rd)
                     5'd8 : begin
                         regOut <= cp0_badVAddr;
+                        `ifdef DEBUG_DISPLAY
                         $display("read cp0 register 'BadVAddr', data %x", cp0_badVAddr);
+                        `endif
                     end 
                     5'd12: begin
                         regOut <= cp0_status;
+                        `ifdef DEBUG_DISPLAY
                         $display("read cp0 register 'BadVAddr', data %x", cp0_status);
+                        `endif
                     end 
                     5'd13: begin
                         regOut <= cp0_cause;
+                        `ifdef DEBUG_DISPLAY
                         $display("read cp0 register 'BadVAddr', data %x", cp0_cause);
+                        `endif
                     end 
                     5'd14: begin
                         regOut <= cp0_epc;
+                        `ifdef DEBUG_DISPLAY
                         $display("read cp0 register 'BadVAddr', data %x", cp0_epc);
+                        `endif
                     end 
                 endcase
             end

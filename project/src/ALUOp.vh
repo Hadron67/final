@@ -22,5 +22,6 @@
 `define ALUOP_LS        5'd18
 `define ALUOP_RS        5'd19
 `define ALUOP_RSA       5'd20
+`define ALUOP_GEZ       5'd21
 
 `endif

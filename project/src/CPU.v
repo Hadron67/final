@@ -14,7 +14,6 @@ module CPUCore(
     input wire [31:0] db_dataIn,
     input wire db_ready,
     output wire [31:0] db_dataOut,
-    output wire db_signed,
     output reg [31:0] db_addr,
     output reg `MEM_ACCESS_T db_accessType,
     output reg `MEM_LEN db_memLen,
@@ -41,7 +40,7 @@ module CPUCore(
     wire [15:0] imm;
     wire [31:0] aluInA, aluInB, aluOut;
     wire [31:0] regOutA, regOutB;
-    wire [31:0] dataIn;
+    reg [31:0] dataIn;
     wire overflow, zero;
     reg [31:0] regIn;
     reg [31:0] aluA, aluB;
@@ -49,6 +48,7 @@ module CPUCore(
 
     wire nop;
     wire `MEM_LEN accessMemLen;
+    wire memSigned;
     wire `CPU_ALU_SRC_A aluSrcA;
     wire `CPU_ALU_SRC_B aluSrcB;
     // prepare all the signals according to next state
@@ -58,7 +58,7 @@ module CPUCore(
     wire `CPU_WRITE_REG_DEST_SRC regDestSrc;
     wire `CPU_WRITE_REG_SRC writeRegSrc;
     wire writeMem, readMem;
-    wire jmp, branch;
+    wire jmp, branch, jmpReg;
     wire writeCP0, readCP0;
     wire isTlbOp, eret;
     
@@ -83,15 +83,24 @@ module CPUCore(
     assign linkpc = pc + 32'd8;
 
     assign db_dataOut = regOutB;
-    assign dataIn = db_dataIn;
+    // assign dataIn = db_dataIn;
 
+    always @* begin
+        case(db_memLen)
+            `MEM_LEN_B: dataIn = {{24{memSigned ? db_dataIn[7] : 1'b0}}, db_dataIn[7:0]};
+            `MEM_LEN_H: dataIn = {{16{memSigned ? db_dataIn[15] : 1'b0}}, db_dataIn[15:0]};
+            `MEM_LEN_W: dataIn = db_dataIn;
+            default: dataIn = 32'dx;
+        endcase
+    end
     // multiplexer for registers input
     always @* begin: mux_registerInput
         case(writeRegSrc)
             `CPU_WRITE_REG_SRC_ALU: regIn = aluOut;
             `CPU_WRITE_REG_SRC_MEM: regIn = dataIn;
             `CPU_WRITE_REG_SRC_CP0REG: regIn = cp0RegOut;
-            `CPU_WRITE_REG_SRC_IMM: regIn = imm << 16;
+            `CPU_WRITE_REG_SRC_IMM: regIn = {imm, {16{1'b0}}};
+            `CPU_WRITE_REG_SRC_PC: regIn = linkpc;
             default: regIn = 32'dx;
         endcase
     end
@@ -113,6 +122,7 @@ module CPUCore(
         case(regDestSrc)
             `CPU_WRITE_REG_DEST_SRC_RT: regDest = rt;
             `CPU_WRITE_REG_DEST_SRC_RD: regDest = rd;
+            `CPU_WRITE_REG_DEST_SRC_RA: regDest = 5'd31;
             default: regDest = 5'dx;
         endcase
     end
@@ -200,8 +210,10 @@ module CPUCore(
     InstructionFetcher insFetcher (
         .branch(branch),
         .jmp(jmp),
+        .jr(jmpReg),
         .target(ins[25:0]),
         .imm(ins[15:0]),
+        .ra(regOutA),
         .pc(pc),
         .epc(cp0_epc),
         .nextpc(nextpc),
@@ -214,7 +226,7 @@ module CPUCore(
         .aluSrcA(aluSrcA),
         .aluSrcB(aluSrcB),
         .aluOptr(aluOptr),
-        .db_signed(db_signed),
+        .memSigned(memSigned),
         .accessMemLen(accessMemLen),
         .aluOverflow(aluOverflow),
         .regDestSrc(regDestSrc),
@@ -225,6 +237,7 @@ module CPUCore(
         .readMem(readMem),
         .jmp(jmp),
         .branch(branch),
+        .jr(jmpReg),
         .writeCP0(writeCP0),
         .readCP0(readCP0),
         .isTlbOp(isTlbOp),
@@ -282,7 +295,7 @@ module CPUCore(
         end 
         else begin
             if(state == S_FETCH_INSTRUCTION && db_ready)
-                insReg <= dataIn;
+                insReg <= db_dataIn;
             if(state != S_INITIAL && nextState == S_FETCH_INSTRUCTION)
                 pc <= nextpc;
             state <= nextState;

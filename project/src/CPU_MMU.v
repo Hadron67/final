@@ -3,15 +3,13 @@
 
 module CPU_MMU(
     input wire clk, res,
-    output wire hlt,
 
     input wire [31:0] db_dataIn,
     output wire [31:0] db_dataOut, db_addr,
     output reg [31:0] vAddr,
     input wire db_ready,
     output wire `MEM_ACCESS_T db_accessType,
-    output wire `MEM_LEN db_memLen,
-    output wire db_signed
+    output wire `MEM_LEN db_memLen
 );
     localparam S_IDLE              = 4'd0;
     localparam S_SAVE_ADDR         = 4'd1;
@@ -55,7 +53,6 @@ module CPU_MMU(
     CPUCore cpu (
         .clk(clk),
         .res(res),
-        .hlt(hlt),
 
         .db_dataIn(db_dataIn),
         .db_dataOut(db_dataOut),
@@ -63,7 +60,6 @@ module CPU_MMU(
         .db_addr(db2_addr),
         .db_accessType(db2_accessType),
         .db_memLen(db_memLen),
-        .db_signed(db_signed),
 
         .mmu_reg(mmu_reg),
         .mmu_dataIn(mmu_dataIn),

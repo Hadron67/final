@@ -12,12 +12,16 @@ module RegFile(
         if(we) begin
             if(regW != 0) begin
                 regs[regW] <= dataIn;
+                `ifdef DEBUG_DISPLAY
                 $display("written data (%d) to register $%d", dataIn, regW);
+                `endif
             end
         end else if(re) begin
             A <= regA;
             B <= regB;
+            `ifdef DEBUG_DISPLAY
             $display("read register $%d and $%d, data (%d) and (%d)", regA, regB, regs[regA], regs[regB]);
+            `endif
         end
     end
 

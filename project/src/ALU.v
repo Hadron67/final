@@ -25,11 +25,12 @@ module ALU(
             `ALUOP_NOR:     result = ~(A | B);
             `ALUOP_LTU:     result = A < B;
             `ALUOP_LT:      result = $signed(A) < $signed(B);
-            `ALUOP_LS:      result = A << B;
-            `ALUOP_RS:      result = A >> B;
-            `ALUOP_RSA:     result = A >>> B;
+            `ALUOP_LS:      result = B << A;
+            `ALUOP_RS:      result = B >> A;
+            `ALUOP_RSA:     result = B >>> A;
             `ALUOP_EQ:      result = A == B ? 1'b1 : 1'b0;
             `ALUOP_NE:      result = A != B ? 1'b1 : 1'b0;
+            `ALUOP_GEZ:     result = $signed(A) >= 0 ? 1'b1 : 1'b0;
             default: result = 64'hxxxxxxxx;
         endcase
     end
