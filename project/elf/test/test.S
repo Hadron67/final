@@ -3,7 +3,7 @@ _start:
     # initialize stack
     li $sp, 4095
     move $fp, $sp
-    jal main
+    # jal main
     nop
     lui $t1, 0xa000
     sw $zero, 0($t1)

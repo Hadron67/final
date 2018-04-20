@@ -10,7 +10,7 @@
 module CPUCore(
     input wire clk,
     input wire res,
-    output reg `CPU_MODE_T cpuMode,
+    output reg `CPU_MODE cpuMode,
     
     input wire [31:0] db_dataIn,
     input wire db_ready,
@@ -31,12 +31,10 @@ module CPUCore(
     localparam S_READ_MEM          = 4'd4;
     localparam S_WRITE_MEM         = 4'd5;
     localparam S_EXCEPTION         = 4'd6;
-    localparam S_SAVE_INSTRUCTION  = 4'd8;
-    localparam S_SAVE_PC           = 4'd9;
+    localparam S_INS_DECODE        = 4'd8;
 
     integer i;
-    reg [31:0] insReg;
-    wire [31:0] ins;
+    reg [31:0] ins;
     wire [4:0] rs, rt, rd, shamt;
     wire [15:0] imm;
     wire [31:0] aluInA, aluInB, aluOut;
@@ -72,7 +70,7 @@ module CPUCore(
     wire readMMUReg, writeMMUReg;
     wire [31:0] cp0_epc, cp0_status, cp0_cause, cp0_badVAddr;
 
-    assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
+    // assign ins = state == S_FETCH_INSTRUCTION && db_ready ? db_dataIn : insReg;
     assign rs = ins[25:21];
     assign rt = ins[20:16];
     assign rd = ins[15:11];
@@ -83,7 +81,6 @@ module CPUCore(
     assign linkpc = pc + 32'd8;
 
     assign db_dataOut = regOutB;
-    // assign dataIn = db_dataIn;
 
     always @* begin
         case(db_memLen)
@@ -160,7 +157,7 @@ module CPUCore(
         endcase
     end
     always @* begin: mux_tlbOp
-        if(isTlbOp && state == S_FETCH_INSTRUCTION) begin
+        if(isTlbOp && state == S_INS_DECODE) begin
             case(tlbOp)
                 // `TLBOP_TLBINV: 
                 // `TLBOP_TLBINVF:
@@ -187,12 +184,10 @@ module CPUCore(
                     nextState = S_EXCEPTION;
                 end 
                 else if(db_ready)
-                    if(isTlbOp || nop)
-                        nextState = S_FETCH_INSTRUCTION;
-                    else
-                        nextState = S_EXEC;
+                    nextState = S_INS_DECODE;
                 else 
                     nextState = S_FETCH_INSTRUCTION;
+            S_INS_DECODE: nextState = isTlbOp || nop ? S_FETCH_INSTRUCTION : S_EXEC;
             S_EXEC:
                 if(readMem)
                     nextState = S_READ_MEM;
@@ -251,12 +246,12 @@ module CPUCore(
         .dataIn(regIn),
         .outA(regOutA),
         .outB(regOutB),
-        .we(writeReg && nextState == S_FETCH_INSTRUCTION),
-        .re(!readCP0 && state == S_FETCH_INSTRUCTION && nextState == S_EXEC)
+        .we(writeReg && state != S_FETCH_INSTRUCTION && nextState == S_FETCH_INSTRUCTION),
+        .re(!readCP0 && state == S_INS_DECODE && nextState == S_EXEC)
     );
     CP0Regs cp0Regs (
         .clk(clk),
-        .we(writeCP0 && nextState == S_FETCH_INSTRUCTION),
+        .we(writeCP0 && nextState == S_FETCH_INSTRUCTION && state == S_EXEC),
         .re(readCP0 && nextState == S_EXEC),
         .rd(cp0RegDesc[7:3]),
         .sel(cp0RegDesc[2:0]),
@@ -292,12 +287,11 @@ module CPUCore(
         if(res) begin
             state <= S_INITIAL;
             pc <= 32'h80000000;
-            // pc <= 0;
         end 
         else begin
-            if(state == S_FETCH_INSTRUCTION && db_ready)
-                insReg <= db_dataIn;
-            if(state != S_INITIAL && nextState == S_FETCH_INSTRUCTION)
+            if(nextState == S_INS_DECODE)
+                ins <= db_dataIn;
+            if(state != S_INITIAL && state != S_FETCH_INSTRUCTION && nextState == S_FETCH_INSTRUCTION)
                 pc <= nextpc;
             state <= nextState;
         end

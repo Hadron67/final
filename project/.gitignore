@@ -5,6 +5,7 @@ incremental_db/**
 output_files/**
 simulation/modelsim/**
 *.qws
+*.frf
 
 # vvp simulation outputs
 simulation/vvp/**

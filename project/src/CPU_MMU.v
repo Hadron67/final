@@ -33,8 +33,8 @@ module CPU_MMU(
         db2_accessType == `MEM_ACCESS_W ||
         db2_accessType == `MEM_ACCESS_R ||
         db2_accessType == `MEM_ACCESS_X;
-    assign db_accessType = state == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
-    assign db2_ready = state == S_IDLE || state == S_ACCESS_MEM && db_ready;
+    assign db_accessType = nextState == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
+    assign db2_ready = state == S_IDLE;
     
     always @* begin: getNextState
         case(state)

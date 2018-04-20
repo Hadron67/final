@@ -40,7 +40,7 @@ module MMU #(
     reg [31:0] tlbWriteIndex;
 
     assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
-    assign pAddr = mapped ? tlbAddrOut : {1'b0, vAddrLatch[30:0]};
+    assign pAddr = mapped ? tlbAddrOut : {3'b000, vAddrLatch[28:0]};
     assign mapped = vAddrLatch[31:30] != 2'b10;
     assign db_io = vAddrLatch[31:29] == 3'b101;
 

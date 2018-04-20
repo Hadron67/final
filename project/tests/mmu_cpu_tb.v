@@ -6,15 +6,16 @@ module DummyMem #(
     parameter MEM_SIZE = 4096 // 4K
 ) (
     input wire clk, res,
-    input wire [31:0] db_dataOut, db_addr,
+    input wire [31:0] db_dataOut, db_addr, vAddr,
     input wire `MEM_ACCESS_T db_accessType,
     input wire `MEM_LEN db_memLen,
+    input wire db_io,
     output wire db_ready,
     output wire [31:0] db_dataIn,
     output reg hlt
 );
-    localparam CMD_ADDR_HLT        = 32'ha0000000;
-    localparam CMD_ADDR_WRITE_CHAR = 32'ha0000001;
+    localparam CMD_ADDR_HLT        = 32'd0;
+    localparam CMD_ADDR_WRITE_CHAR = 32'd1;
 
     reg [7:0] mem[MEM_SIZE - 1:0];
     reg [31:0] dataOut;
@@ -38,55 +39,56 @@ module DummyMem #(
                     case(db_memLen)
                         `MEM_LEN_B: begin
                             `ifdef DEBUG_DISPLAY
-                            $display("read byte at address %x, data: %x", db_addr, r_b);
+                            $display("read byte at address %x (%x), data: %x", db_addr, vAddr, r_b);
                             `endif
                             dataOut <= r_b;
                         end
                         `MEM_LEN_H: begin
                             `ifdef DEBUG_DISPLAY
-                            $display("read half word at address %x, data: %x", db_addr, r_h);
+                            $display("read half word at address %x (%x), data: %x", db_addr, vAddr, r_h);
                             `endif
                             dataOut <= r_h;
                         end
                         `MEM_LEN_W: begin
                             `ifdef DEBUG_DISPLAY
-                            $display("read word at address %x, data: %x", db_addr, r_w);
+                            $display("read word at address %x (%x), data: %x", db_addr, vAddr, r_w);
                             `endif
                             dataOut <= r_w;
                         end
                     endcase
                 end
                 `MEM_ACCESS_W: begin
-                    
-                    if(db_addr == CMD_ADDR_HLT)
-                        hlt <= 1'b1;
-                    else if(db_addr == CMD_ADDR_WRITE_CHAR)
-                        $write("%c", dataIn[7:0]);
+                    if(db_io) begin
+                        if(db_addr == CMD_ADDR_HLT)
+                            hlt <= 1'b1;
+                        else if(db_addr == CMD_ADDR_WRITE_CHAR)
+                            $write("%c", dataIn[7:0]);
+                    end
                     else
                         case(db_memLen)
                             `MEM_LEN_B: begin
                                 mem[db_addr] <= dataIn[7:0];
                                 `ifdef DEBUG_DISPLAY
-                                $display("write byte %x to address %x", dataIn[7:0], db_addr);
+                                $display("write byte %x to address %x (%x)", dataIn[7:0], db_addr, vAddr);
                                 `endif
                             end
                             `MEM_LEN_H: begin
                                 {mem[db_addr], mem[db_addr + 1]} <= dataIn[15:0];
                                 `ifdef DEBUG_DISPLAY
-                                $display("write half word %x to address %x", dataIn[15:0], db_addr);
+                                $display("write half word %x to address %x (%x)", dataIn[15:0], db_addr, vAddr);
                                 `endif
                             end
                             `MEM_LEN_W: begin
                                 {mem[db_addr], mem[db_addr + 1], mem[db_addr + 2], mem[db_addr + 3]} <= dataIn;
                                 `ifdef DEBUG_DISPLAY
-                                $display("write word %x to address %x", dataIn, db_addr);
+                                $display("write word %x to address %x (%x)", dataIn, db_addr, vAddr);
                                 `endif
                             end
                         endcase
                 end
                 `MEM_ACCESS_X: begin
                     `ifdef DEBUG_DISPLAY
-                    $display(`FONT_YELLOW("execute memory at address %x, data: %x"), db_addr, r_w);
+                    $display(`FONT_YELLOW("execute memory at address %x (%x), data: %x"), db_addr, vAddr, r_w);
                     `endif
                     dataOut <= r_w;
                 end
@@ -105,21 +107,75 @@ endmodule
 
 module mmu_cpu_tb();
     reg clk, res;
-    wire [31:0] db_dataOut, db_addr;
+    wire [31:0] db_dataOut, db_addr, db_dataIn, vAddr;
     wire `MEM_ACCESS_T db_accessType;
     wire `MEM_LEN db_memLen;
-    wire db_ready;
-    wire [31:0] db_dataIn;
+    wire db_ready, db_io;
     wire hlt;
+    reg enableclk;
+    integer cnt;
 
     CPU_MMU uut (
         //     input wire clk, res,
-
-        // input wire [31:0] db_dataIn,
-        // output wire [31:0] db_dataOut, db_addr,
-        // output reg [31:0] vAddr,
-        // input wire db_ready,
-        // output wire `MEM_ACCESS_T db_accessType,
-        // output wire `MEM_LEN db_memLen
+        .clk(clk),
+        .res(res),
+        .db_dataIn(db_dataIn),
+        .db_dataOut(db_dataOut),
+        .db_addr(db_addr),
+        .db_io(db_io),
+        .vAddr(vAddr),
+        .db_ready(db_ready),
+        .db_accessType(db_accessType),
+        .db_memLen(db_memLen)
     );
+
+    DummyMem mem (
+        .clk(clk),
+        .res(res),
+        .db_dataIn(db_dataIn),
+        .db_dataOut(db_dataOut),
+        .db_addr(db_addr),
+        .db_io(db_io),
+        .vAddr(vAddr),
+        .db_ready(db_ready),
+        .db_accessType(db_accessType),
+        .db_memLen(db_memLen),
+        .hlt(hlt)
+    );
+
+    initial begin
+        $dumpfile({`OUT_DIR, "/mmu_cpu.vcd"});
+        $dumpvars(0, uut);
+        $display("------------------------------------------------");
+        clk = 0;
+        res = 0;
+        cnt = 0;
+        enableclk = 0;
+        #100;
+        res = 1;
+        #100;
+        res = 0;
+
+        enableclk = 1;
+    end
+
+    always begin
+        if(hlt) begin
+            $display("------------------------------------------------");
+            $display(`FONT_GREEN("exit command received, exit."));
+            $dumpflush;
+            $stop;
+        end 
+        // else if(cnt >= 65535) begin
+        //     $display("------------------------------------------------");
+        //     $display(`FONT_GREEN("time's up, exit."));
+        //     $dumpflush;
+        //     $stop;
+        // end
+        clk <= ~clk;
+        cnt <= cnt + 1;
+        #100;
+    end
+
+
 endmodule

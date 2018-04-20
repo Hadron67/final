@@ -118,7 +118,9 @@ module TLB #(
                 tlb_entryHi [index] <= entryHiIn;
                 tlb_entryLo0[index] <= entryLo0In;
                 tlb_entryLo1[index] <= entryLo1In;
+                `ifdef DEBUG_DISPLAY
                 $display("written TLB entry $%d", index);
+                `endif
             end
         end
     end
