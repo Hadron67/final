@@ -11,25 +11,23 @@ _start:
     lui $sp, 0x8000 # kernel umapped
     ori $sp, $sp, 4095
     move $fp, $sp
-initTlb:
-    li $t1, 0
-    mtc0 $t1, c0_entrylo0
-    mtc0 $t1, c0_entrylo1
-    mtc0 $t1, c0_entryhi
-    mtc0 $t1, c0_pagemask
-    li $t1, 16 # 16 entries
-l0:
-    beqz $t1, tlbInitdone
-    nop
-    addi $t1, $t1, -1
-    mtc0 $t1, c0_index
-    tlbwi
-    b l0
-    nop
-tlbInitdone:
-writeTlb:
-    # TODO: write initial tlb entries
-
+# initTlb:
+#     li $t1, 0
+#     mtc0 $t1, c0_entrylo0
+#     mtc0 $t1, c0_entrylo1
+#     mtc0 $t1, c0_entryhi
+#     mtc0 $t1, c0_pagemask
+#     li $t1, 16 # 16 entries
+# l0:
+#     beqz $t1, tlbInitdone
+#     nop
+#     addi $t1, $t1, -1
+#     mtc0 $t1, c0_index
+#     tlbwi
+#     b l0
+#     nop
+# tlbInitdone:
+# writeTlb:
     jal main
     nop
 quit:

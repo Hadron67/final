@@ -150,16 +150,14 @@ module mmu_cpu_tb();
         clk = 0;
         res = 0;
         cnt = 0;
-        enableclk = 0;
         #100;
         res = 1;
         #100;
         res = 0;
-
-        enableclk = 1;
     end
 
-    always begin
+    always begin: clkDriver
+        #100;
         if(hlt) begin
             $display("------------------------------------------------");
             $display(`FONT_GREEN("exit command received, exit."));
@@ -174,7 +172,6 @@ module mmu_cpu_tb();
         // end
         clk <= ~clk;
         cnt <= cnt + 1;
-        #100;
     end
 
 

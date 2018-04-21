@@ -11,5 +11,5 @@ module ExceptionControl(
 );
     // interrupt, tlb exception, segv, syscall
     reg [4:0] excCode;
-
+    
 endmodule // ExceptionControl

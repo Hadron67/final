@@ -23,4 +23,4 @@ $(TARGET_NAME).elf: $(OBJ) linker.ld
 
 .PHONY: clean
 clean:
-	$(RM) *.hex *.o *.bin
+	$(RM) *.hex *.o *.bin *.elf

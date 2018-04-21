@@ -7,7 +7,8 @@ module CPU_MMU(
     input wire [31:0] db_dataIn,
     output wire [31:0] db_dataOut, db_addr,
     output reg [31:0] vAddr,
-    input wire db_ready, db_io,
+    input wire db_ready, 
+    output wire db_io,
     output wire `MEM_ACCESS_T db_accessType,
     output wire `MEM_LEN db_memLen
 );
@@ -34,7 +35,7 @@ module CPU_MMU(
         db2_accessType == `MEM_ACCESS_R ||
         db2_accessType == `MEM_ACCESS_X;
     assign db_accessType = nextState == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
-    assign db2_ready = state == S_IDLE;
+    assign db2_ready = state == S_ACCESS_MEM && db_ready;
     
     always @* begin: getNextState
         case(state)
@@ -48,8 +49,10 @@ module CPU_MMU(
             S_ACCESS_MEM: 
                 if(mmu_exception != `MMU_EXCEPTION_NONE)
                     nextState = S_IDLE;
+                else if(db_ready)
+                    nextState = accessMem ? S_SAVE_ADDR : S_IDLE;
                 else
-                    nextState = db_ready ? S_IDLE : S_ACCESS_MEM;
+                    nextState = S_ACCESS_MEM;
         endcase
     end
 
