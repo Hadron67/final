@@ -12,7 +12,7 @@ module Controller(
     output wire `CPU_ALU_SRC_A aluSrcA,
     output wire `CPU_ALU_SRC_B aluSrcB,
     output reg `MEM_LEN accessMemLen,
-    output reg `ALUOP_T aluOptr,
+    output reg `ALUOP aluOptr,
     output wire aluOverflow,
     output wire `CPU_WRITE_REG_DEST_SRC regDestSrc,
     output wire extOp,
@@ -25,7 +25,8 @@ module Controller(
     output wire writeCP0,
     output wire readCP0,
     output wire isTlbOp,
-    output wire eret
+    output wire eret,
+    output wire syscall
 );
     wire [5:0] op;
     wire [5:0] func;
@@ -94,6 +95,7 @@ module Controller(
     assign writeCP0 = op == `OPCODE_COP0 && rs == 4 && ~|ins[10:3];
     assign isTlbOp = op == `OPCODE_COP0 && ins[25] && ~|ins[24:6];
     assign eret = isTlbOp && ins[5:0] == 6'b011000;
+    assign syscall = op == `OPCODE_PSOP_R && ins[5:0] == 6'b001100;
 
     assign jmp = 
         op == `OPCODE_J ||

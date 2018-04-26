@@ -9,7 +9,7 @@ module CPU_MMU(
     output reg [31:0] vAddr,
     input wire db_ready, 
     output wire db_io,
-    output wire `MEM_ACCESS_T db_accessType,
+    output wire `MEM_ACCESS db_accessType,
     output wire `MEM_LEN db_memLen
 );
     localparam S_IDLE              = 4'd0;
@@ -17,16 +17,16 @@ module CPU_MMU(
     localparam S_ACCESS_MEM        = 4'd2;
 
     reg [3:0] state, nextState;
-    wire `MMU_REG_T mmu_reg;
+    wire `MMU_REG mmu_reg;
     wire [31:0] mmu_dataIn;
     wire [31:0] mmu_dataOut;
-    wire `MMU_CMD_T mmu_cmd;
-    wire `MMU_EXCEPTION_T mmu_exception;
+    wire `MMU_CMD mmu_cmd;
+    wire `MMU_EXCEPTION mmu_exception;
 
     wire [31:0] db2_addr;
     wire db2_ready;
-    wire `MEM_ACCESS_T db2_accessType;
-    wire `MEM_ACCESS_T accessType;
+    wire `MEM_ACCESS db2_accessType;
+    wire `MEM_ACCESS accessType;
 
     wire accessMem;
 
@@ -47,9 +47,7 @@ module CPU_MMU(
             end
             S_SAVE_ADDR: nextState = S_ACCESS_MEM;
             S_ACCESS_MEM: 
-                if(mmu_exception != `MMU_EXCEPTION_NONE)
-                    nextState = S_IDLE;
-                else if(db_ready)
+                if(mmu_exception != `MMU_EXCEPTION_NONE || db_ready)
                     nextState = accessMem ? S_SAVE_ADDR : S_IDLE;
                 else
                     nextState = S_ACCESS_MEM;

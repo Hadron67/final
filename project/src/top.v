@@ -13,7 +13,7 @@ module top(
     input  wire        db_ready,
     output wire [31:0] db_dataOut,
     output wire  [31:0] db_addr,
-    output wire `MEM_ACCESS_T db_accessType
+    output wire `MEM_ACCESS db_accessType
 );  
     CPU_MMU cpu_et_mmu (
         .clk(clk),

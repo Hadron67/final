@@ -1,7 +1,7 @@
 `ifndef __ALUOP_VH__
 `define __ALUOP_VH__
 
-`define ALUOP_T [4:0]
+`define ALUOP [4:0]
 
 `define ALUOP_NONE      5'd0
 `define ALUOP_PLUS      5'd1

@@ -10,7 +10,7 @@ module CP0Regs(
 
     input wire [31:0] mmu_dataOut,
     output wire [31:0] mmu_dataIn,
-    output reg `MMU_REG_T mmu_reg,
+    output reg `MMU_REG mmu_reg,
     output wire readMMUReg, writeMMUReg,
 
     input wire [31:0] in_epc, in_status, in_cause, in_badVAddr,

@@ -1,7 +1,7 @@
 `include "ALUOp.vh"
 
 module ALU(
-    input wire `ALUOP_T optr,
+    input wire `ALUOP optr,
     input wire overflowTrap,
     input wire [31:0] A,
     input wire [31:0] B,

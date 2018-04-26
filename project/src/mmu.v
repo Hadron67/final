@@ -12,12 +12,12 @@ module MMU #(
     output wire [31:0] pAddr,
     output wire db_io,
 
-    input wire `MMU_REG_T mmu_reg,
-    input wire `MEM_ACCESS_T mmu_accessType,
+    input wire `MMU_REG mmu_reg,
+    input wire `MEM_ACCESS mmu_accessType,
     input wire [31:0] mmu_dataIn,
     output reg [31:0] mmu_dataOut,
-    input wire `MMU_CMD_T mmu_cmd,
-    output reg `MMU_EXCEPTION_T mmu_exception
+    input wire `MMU_CMD mmu_cmd,
+    output reg `MMU_EXCEPTION mmu_exception
 );
     localparam ENTRY_COUNT = 1 << ENTRY_ADDR_WIDTH;
     localparam PAGEMASK_MASK = 32'hffffe0ff;// used to set 12-8 bits to zero
@@ -54,9 +54,7 @@ module MMU #(
 
     always @* begin
         if(mapped)
-            if(~found)
-                mmu_exception = `MMU_EXCEPTION_TLBMISS;
-            else if(!valid)
+            if(!found || !valid)
                 if(mmu_accessType == `MEM_ACCESS_W)
                     mmu_exception = `MMU_EXCEPTION_TLBS;
                 else

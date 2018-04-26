@@ -5,7 +5,7 @@
 `define MEM_ACCESS_W    2'd1
 `define MEM_ACCESS_R    2'd2
 `define MEM_ACCESS_X    2'd3
-`define MEM_ACCESS_T [1:0]
+`define MEM_ACCESS [1:0]
 
 `define MEM_LEN_B  2'd0 // 8 bit
 `define MEM_LEN_H  2'd1 // 16 bit

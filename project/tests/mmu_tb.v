@@ -10,15 +10,15 @@ module mmu_tb();
     reg [31:0] vAddr;
     wire [31:0] pAddr;
 
-    reg `MMU_REG_T mmu_reg;
-    reg `MEM_ACCESS_T mmu_accessType;
+    reg `MMU_REG mmu_reg;
+    reg `MEM_ACCESS mmu_accessType;
     reg [31:0] mmu_dataIn;
-    reg `MMU_CMD_T mmu_cmd;
+    reg `MMU_CMD mmu_cmd;
     wire [31:0] mmu_dataOut;
-    wire `MMU_EXCEPTION_T mmu_exception;
+    wire `MMU_EXCEPTION mmu_exception;
 
     task writeReg;
-        input `MMU_REG_T mmuReg;
+        input `MMU_REG mmuReg;
         input [31:0] data;
         begin
             mmu_reg = mmuReg;
@@ -90,7 +90,7 @@ module mmu_tb();
     endtask
 
     task sendcmd;
-        input `MMU_CMD_T cmd;
+        input `MMU_CMD cmd;
         begin
             mmu_cmd = cmd;
             clk = 1;
@@ -114,7 +114,7 @@ module mmu_tb();
     task testAddr;
         input [31:0] va;
         input [31:0] expected;
-        input `MMU_EXCEPTION_T expectedException;
+        input `MMU_EXCEPTION expectedException;
         begin
             vAddr = va;
             addrValid = 1'b1;
@@ -170,7 +170,7 @@ module mmu_tb();
         testAddr({19'd1, 1'b1, 12'd12}, 32'dx, `MMU_EXCEPTION_TLBL);
         testAddr({17'd28, 1'b0, 14'd54}, {1'b0, 17'd500, 14'd54}, `MMU_CMD_NONE);
         writeReg(`MMU_REG_ENTRYHI, 32'd2);
-        testAddr({19'd1, 1'b1, 12'd12}, 32'dx, `MMU_EXCEPTION_TLBMISS);
+        testAddr({19'd1, 1'b1, 12'd12}, 32'dx, `MMU_EXCEPTION_TLBL);
         #1000;
         $dumpflush;
         $stop;

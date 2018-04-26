@@ -7,7 +7,7 @@ module DummyMem #(
 ) (
     input wire clk, res,
     input wire [31:0] db_dataOut, db_addr, vAddr,
-    input wire `MEM_ACCESS_T db_accessType,
+    input wire `MEM_ACCESS db_accessType,
     input wire `MEM_LEN db_memLen,
     input wire db_io,
     output wire db_ready,
@@ -108,7 +108,7 @@ endmodule
 module mmu_cpu_tb();
     reg clk, res;
     wire [31:0] db_dataOut, db_addr, db_dataIn, vAddr;
-    wire `MEM_ACCESS_T db_accessType;
+    wire `MEM_ACCESS db_accessType;
     wire `MEM_LEN db_memLen;
     wire db_ready, db_io;
     wire hlt;
