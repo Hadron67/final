@@ -25,7 +25,7 @@ module ExceptionControl(
     assign we_epc = !exl && exception;
     assign we_badVAddr = exception && mmu_exception != `MMU_EXCEPTION_NONE;
 
-    assign out_status = {cp0_status[31:2], 1'b1, cp0_status[0]};
+    assign out_status = {cp0_status[31:2], exception, cp0_status[0]};
     assign out_cause = {cp0_cause[31:16], maksedIrq, 1'b0, excCode, 2'b00};
 
     // Exception priority encoder

@@ -4,8 +4,10 @@ CXX = $(TC)-g++
 AS = $(TC)-as
 LD = $(TC)-ld
 OBJCOPY = $(TC)-objcopy
-CFLAGS = -fno-stack-protector -O0 -mno-abicalls -fno-pic
+ASFLAGS = -msoft-float -mips32 -O0
+CFLAGS = -fno-stack-protector -O0 -mno-abicalls -fno-pic -msoft-float
 CXXFLAGS = $(CFLAGS) -fno-exceptions
+OBJ = $(SOURCE:%=build/%.o)
 
 LDFLAGS := -nostartfiles -Tlinker.ld
 
@@ -14,13 +16,13 @@ $(TARGET_NAME).elf: $(OBJ) linker.ld
 	$(LD) $(LDFLAGS) $(OBJ) -o $@
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
-%.S.o: %.S
-	$(AS) -mips32 -O0 -o $@ $<
-%.c.o: %.c
+build/%.S.o: %.S
+	$(AS) $(ASFLAGS) -o $@ $<
+build/%.c.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
-%.cc.o: %.cc
+build/%.cc.o: %.cc
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 .PHONY: clean
 clean:
-	$(RM) *.hex *.o *.bin *.elf
+	$(RM) *.hex *.o *.bin *.elf build/*

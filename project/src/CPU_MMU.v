@@ -84,7 +84,8 @@ module CPU_MMU(
         .mmu_dataIn(mmu_dataIn),
         .mmu_dataOut(mmu_dataOut),
         .mmu_cmd(mmu_cmd),
-        .mmu_exception(mmu_exception)
+        .mmu_exception(mmu_exception),
+        .mmu_accessType(db2_accessType)
     );
 
     always @(posedge clk or posedge res) begin

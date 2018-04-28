@@ -88,7 +88,6 @@ module CPUCore(
     assign linkpc = pc + 32'd8;
 
     assign db_dataOut = regOutB;
-    assign exception = 1'b0;
 
     always @* begin
         case(db_memLen)
@@ -187,7 +186,7 @@ module CPUCore(
     end
     always @* begin
         case(state)
-            S_INS_DECODE: cycleEnd = isTlbOp || nop;
+            S_INS_DECODE: cycleEnd = isTlbOp || nop || eret;
             S_EXEC: cycleEnd = !readMem && !writeMem;
             S_READ_MEM: cycleEnd = db_ready;
             S_WRITE_MEM: cycleEnd = db_ready;
@@ -199,7 +198,7 @@ module CPUCore(
         case(state)
             S_INITIAL: nextState = S_FETCH_INSTRUCTION;
             S_FETCH_INSTRUCTION: 
-                if(exception) begin
+                if(mmu_exception != `MMU_EXCEPTION_NONE) begin
                     nextState = S_EXCEPTION;
                 end 
                 else if(db_ready)
@@ -207,8 +206,10 @@ module CPUCore(
                 else 
                     nextState = S_FETCH_INSTRUCTION;
             S_INS_DECODE:
-                if(isTlbOp || nop)
-                    nextState = exception ? S_EXCEPTION : S_FETCH_INSTRUCTION;
+                if(isTlbOp || nop || eret)
+                    nextState = S_FETCH_INSTRUCTION;
+                else if(syscall)
+                    nextState = S_EXCEPTION;
                 else 
                     nextState = S_EXEC;
             S_EXEC:
@@ -219,12 +220,12 @@ module CPUCore(
                 else
                     nextState = exception ? S_EXCEPTION : S_FETCH_INSTRUCTION;
             S_READ_MEM:
-                if(exception)
+                if(mmu_exception != `MMU_EXCEPTION_NONE)
                     nextState = S_EXCEPTION;
                 else 
                     nextState = db_ready ? S_FETCH_INSTRUCTION : S_READ_MEM;
             S_WRITE_MEM:
-                if(exception)
+                if(mmu_exception != `MMU_EXCEPTION_NONE)
                     nextState = S_EXCEPTION;
                 else
                     nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
@@ -242,6 +243,7 @@ module CPUCore(
         .ra(regOutA),
         .pc(pc),
         .epc(cp0_epc),
+        .exception(exception),
         .nextpc(nextpc),
         .z(zero),
         .eret(eret)
@@ -296,10 +298,11 @@ module CPUCore(
         .outA(regOutA),
         .outB(regOutB),
         .we(writeReg && cycleEnd),
-        .re(!readCP0 && state == S_INS_DECODE && nextState == S_EXEC)
+        .re(!readCP0 && !syscall && state == S_INS_DECODE && nextState == S_EXEC)
     );
     CP0Regs cp0Regs (
         .clk(clk),
+        .res(res),
         .we(writeCP0 && cycleEnd),
         .re(readCP0 && nextState == S_EXEC),
         .rd(cp0RegDesc[7:3]),
@@ -314,16 +317,16 @@ module CPUCore(
         .writeMMUReg(writeMMUReg),
 
         .in_epc(incEpc ? pc + 32'd4 : pc),
-        .we_epc(we_epc && nextState == S_EXCEPTION),
+        .we_epc(we_epc && state == S_EXCEPTION),
 
         .in_status(out_status),
-        .we_status(we_status && nextState == S_EXCEPTION),
+        .we_status(we_status && state == S_EXCEPTION),
 
-        .in_cause(in_cause),
-        .we_cause(we_cause && nextState == S_EXCEPTION),
+        .in_cause(out_cause),
+        .we_cause(we_cause && state == S_EXCEPTION || eret && cycleEnd),
 
         .in_badVAddr(db_addr),
-        .we_badVAddr(we_badVAddr && nextState == S_EXCEPTION),
+        .we_badVAddr(we_badVAddr && state == S_EXCEPTION),
 
         .cp0_epc(cp0_epc),
         .cp0_cause(cp0_cause),

@@ -73,7 +73,7 @@ module Controller(
         op == `OPCODE_SWR;
     assign memSigned = !(op == `OPCODE_LBU || op == `OPCODE_LHU);
     assign aluToReg = 
-        ~|op && !jr || 
+        ~|op && !jr && !syscall || 
         op == `OPCODE_ADDI ||
         op == `OPCODE_ADDIU ||
         op == `OPCODE_SLTI ||

@@ -10,7 +10,7 @@ struct __IO_FILE {
     const struct __IO_FILE_vt *_vt;
 };
 int vafprintf(FILE *f, const char *fmt, va_list args);
-int fprintf(FILE *f, const char *fmt, ...);
+int fprintf(FILE *f, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
 FILE *fcmdopen(unsigned int addr);
 #endif

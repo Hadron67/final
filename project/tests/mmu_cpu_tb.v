@@ -39,19 +39,19 @@ module DummyMem #(
                     case(db_memLen)
                         `MEM_LEN_B: begin
                             `ifdef DEBUG_DISPLAY
-                            $display("read byte at address %x (%x), data: %x", db_addr, vAddr, r_b);
+                            $display("read byte at address 0x%x (0x%x), data: 0x%x", db_addr, vAddr, r_b);
                             `endif
                             dataOut <= r_b;
                         end
                         `MEM_LEN_H: begin
                             `ifdef DEBUG_DISPLAY
-                            $display("read half word at address %x (%x), data: %x", db_addr, vAddr, r_h);
+                            $display("read half word at address 0x%x (0x%x), data: 0x%x", db_addr, vAddr, r_h);
                             `endif
                             dataOut <= r_h;
                         end
                         `MEM_LEN_W: begin
                             `ifdef DEBUG_DISPLAY
-                            $display("read word at address %x (%x), data: %x", db_addr, vAddr, r_w);
+                            $display("read word at address 0x%x (0x%x), data: 0x%x", db_addr, vAddr, r_w);
                             `endif
                             dataOut <= r_w;
                         end
@@ -69,26 +69,26 @@ module DummyMem #(
                             `MEM_LEN_B: begin
                                 mem[db_addr] <= dataIn[7:0];
                                 `ifdef DEBUG_DISPLAY
-                                $display("write byte %x to address %x (%x)", dataIn[7:0], db_addr, vAddr);
+                                $display("write byte 0x%x to address 0x%x (0x%x)", dataIn[7:0], db_addr, vAddr);
                                 `endif
                             end
                             `MEM_LEN_H: begin
                                 {mem[db_addr], mem[db_addr + 1]} <= dataIn[15:0];
                                 `ifdef DEBUG_DISPLAY
-                                $display("write half word %x to address %x (%x)", dataIn[15:0], db_addr, vAddr);
+                                $display("write half word 0x%x to address 0x%x (0x%x)", dataIn[15:0], db_addr, vAddr);
                                 `endif
                             end
                             `MEM_LEN_W: begin
                                 {mem[db_addr], mem[db_addr + 1], mem[db_addr + 2], mem[db_addr + 3]} <= dataIn;
                                 `ifdef DEBUG_DISPLAY
-                                $display("write word %x to address %x (%x)", dataIn, db_addr, vAddr);
+                                $display("write word 0x%x to address 0x%x (0x%x)", dataIn, db_addr, vAddr);
                                 `endif
                             end
                         endcase
                 end
                 `MEM_ACCESS_X: begin
                     `ifdef DEBUG_DISPLAY
-                    $display(`FONT_YELLOW("execute memory at address %x (%x), data: %x"), db_addr, vAddr, r_w);
+                    $display(`FONT_YELLOW("execute memory at address 0x%x (0x%x), data: 0x%x"), db_addr, vAddr, r_w);
                     `endif
                     dataOut <= r_w;
                 end
@@ -164,12 +164,12 @@ module mmu_cpu_tb();
             $dumpflush;
             $stop;
         end 
-        // else if(cnt >= 65535) begin
-        //     $display("------------------------------------------------");
-        //     $display(`FONT_GREEN("time's up, exit."));
-        //     $dumpflush;
-        //     $stop;
-        // end
+        else if(cnt >= 65535) begin
+            $display("------------------------------------------------");
+            $display(`FONT_GREEN("time's up, exit."));
+            $dumpflush;
+            $stop;
+        end
         clk <= ~clk;
         cnt <= cnt + 1;
     end

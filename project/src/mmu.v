@@ -24,7 +24,7 @@ module MMU #(
     localparam ENTRYHI_MASK  = 32'h1fffe000;
 
     reg [31:0] reg_index;
-    reg [31:0] reg_random;
+    wire [31:0] reg_random;
     reg [31:0] reg_entryLo0;
     reg [31:0] reg_entryLo1;
     reg [31:0] reg_ctx;
@@ -32,11 +32,13 @@ module MMU #(
     reg [31:0] reg_wired;
     reg [31:0] reg_entryHi;
     reg [31:0] vAddrLatch;
+    reg prob;
+    reg `MEM_ACCESS accessTypeReg;
     wire [31:0] tlbOut_entryHi, tlbOut_entryLo0, tlbOut_entryLo1, tlbOut_pageMask, tlbOut_index;
     wire found, valid, dirty;
 
     wire writeTlb, mapped;
-    wire [31:0] tlbAddrOut;
+    wire [31:0] tlbAddrOut, randomOut;
     reg [31:0] tlbWriteIndex;
 
     assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
@@ -48,6 +50,7 @@ module MMU #(
         case(mmu_cmd)
             `MMU_CMD_WRITE_TLB_RANDOM: tlbWriteIndex = reg_random;
             `MMU_CMD_WRITE_TLB:        tlbWriteIndex = reg_index;
+            `MMU_CMD_READ_TLB:         tlbWriteIndex = reg_index;
             default: tlbWriteIndex = 32'dx;
         endcase
     end
@@ -55,11 +58,11 @@ module MMU #(
     always @* begin
         if(mapped)
             if(!found || !valid)
-                if(mmu_accessType == `MEM_ACCESS_W)
+                if(accessTypeReg == `MEM_ACCESS_W)
                     mmu_exception = `MMU_EXCEPTION_TLBS;
                 else
                     mmu_exception = `MMU_EXCEPTION_TLBL;
-            else if(dirty && mmu_accessType == `MEM_ACCESS_W)
+            else if(dirty && accessTypeReg == `MEM_ACCESS_W)
                 mmu_exception = `MMU_EXCEPTION_TLBMODIFIED;
             else
                 mmu_exception = `MMU_EXCEPTION_NONE;
@@ -67,12 +70,17 @@ module MMU #(
             mmu_exception = `MMU_EXCEPTION_NONE;
     end
 
+    Random32 randomGen (
+        .clk(clk),
+        .res(res),
+        .out(reg_random)
+    );
     TLB #(
         .ENTRY_ADDR_WIDTH(ENTRY_ADDR_WIDTH)
     ) tlb (
         .clk(clk),
         .res(res),
-        .vAddr(mmu_cmd == `MMU_CMD_PROB_TLB ? {reg_entryHi[31:13], {12{1'b0}}} : vAddrLatch),
+        .vAddr(vAddrLatch),
         .pAddr(tlbAddrOut),
         .entryHiIn(reg_entryHi),
         .entryLo0In(reg_entryLo0),
@@ -93,11 +101,22 @@ module MMU #(
         .matchedIndex(tlbOut_index)
     );
 
-    always @(posedge clk) begin
-        if(addrValid) begin
-            // pAddr <= pAddrReg;
-            // mmu_exception <= exceptionReg;
-            vAddrLatch <= vAddr;
+    always @(posedge clk or posedge res) begin
+        if(res) begin
+            prob <= 1'b0;
+        end
+        else begin
+            if(addrValid) begin
+                vAddrLatch <= vAddr;
+                accessTypeReg <= mmu_accessType;
+            end
+            else if(mmu_cmd == `MMU_CMD_PROB_TLB && !prob) begin
+                vAddrLatch <= {reg_entryHi[31:13], {12{1'b0}}};
+                prob <= 1'b1;
+            end
+            else if(prob) begin
+                prob <= 1'b0;
+            end
         end
     end
 
@@ -111,9 +130,9 @@ module MMU #(
                     `endif
                 end
                 `MMU_REG_RANDOM: begin
-                    reg_random <= mmu_dataIn;
+                    // reg_random <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'Random' register with data %x", mmu_dataIn);
+                    $display("Warning: attempt to write read-only register 'Random'", mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_ENTRYLO0: begin
@@ -204,5 +223,7 @@ module MMU #(
                     `endif
                 end 
             endcase
+        else if(prob)
+            reg_index <= tlbOut_index;
     end
 endmodule

@@ -1,9 +1,8 @@
 SOURCE=\
 startup.S \
-main.c \
+kernel.c \
 io.c
 
-OBJ=$(SOURCE:%=%.o)
 TARGET_NAME = mmu_test
 
 sinclude ../Makefile
