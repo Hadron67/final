@@ -5,7 +5,7 @@ AS = $(TC)-as
 LD = $(TC)-ld
 OBJCOPY = $(TC)-objcopy
 ASFLAGS = -msoft-float -mips32 -O0
-CFLAGS = -fno-stack-protector -O0 -mno-abicalls -fno-pic -msoft-float
+CFLAGS = -fno-stack-protector -mips32 -O0 -mno-abicalls -fno-pic -msoft-float
 CXXFLAGS = $(CFLAGS) -fno-exceptions
 OBJ = $(SOURCE:%=build/%.o)
 

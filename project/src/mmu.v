@@ -32,7 +32,7 @@ module MMU #(
     reg [31:0] reg_wired;
     reg [31:0] reg_entryHi;
     reg [31:0] vAddrLatch;
-    reg prob;
+    reg prob, convert;
     reg `MEM_ACCESS accessTypeReg;
     wire [31:0] tlbOut_entryHi, tlbOut_entryLo0, tlbOut_entryLo1, tlbOut_pageMask, tlbOut_index;
     wire found, valid, dirty;
@@ -48,7 +48,7 @@ module MMU #(
 
     always @* begin
         case(mmu_cmd)
-            `MMU_CMD_WRITE_TLB_RANDOM: tlbWriteIndex = reg_random;
+            `MMU_CMD_WRITE_TLB_RANDOM: tlbWriteIndex = reg_random[ENTRY_ADDR_WIDTH - 1:0];
             `MMU_CMD_WRITE_TLB:        tlbWriteIndex = reg_index;
             `MMU_CMD_READ_TLB:         tlbWriteIndex = reg_index;
             default: tlbWriteIndex = 32'dx;
@@ -104,19 +104,23 @@ module MMU #(
     always @(posedge clk or posedge res) begin
         if(res) begin
             prob <= 1'b0;
+            convert <= 1'b0;
         end
         else begin
             if(addrValid) begin
                 vAddrLatch <= vAddr;
                 accessTypeReg <= mmu_accessType;
+                convert <= 1'b1;
             end
             else if(mmu_cmd == `MMU_CMD_PROB_TLB && !prob) begin
                 vAddrLatch <= {reg_entryHi[31:13], {12{1'b0}}};
                 prob <= 1'b1;
             end
-            else if(prob) begin
+            if(prob) begin
                 prob <= 1'b0;
             end
+            if(convert)
+                convert <= 1'b0;
         end
     end
 
@@ -223,7 +227,25 @@ module MMU #(
                     `endif
                 end 
             endcase
-        else if(prob)
-            reg_index <= tlbOut_index;
+        else if(prob) begin
+            if(found) begin
+                reg_index <= tlbOut_index;
+                `ifdef DEBUG_DISPLAY
+                $display("written matched index %d to register 'Index'", tlbOut_index);
+                `endif
+            end
+            else begin
+                reg_index <= 1 << ENTRY_ADDR_WIDTH;
+                `ifdef DEBUG_DISPLAY
+                $display("no matched entry, written %d to register 'Index'", 1 << ENTRY_ADDR_WIDTH);
+                `endif
+            end
+        end
+        else if(convert && mmu_exception != `MMU_EXCEPTION_NONE) begin
+            reg_ctx <= {reg_ctx[31:23], vAddrLatch[31:13], 4'd0};
+            `ifdef DEBUG_DISPLAY
+            $display("written bad VPN2 0x%x to register 'Context'", vAddrLatch[31:13]);
+            `endif
+        end
     end
 endmodule

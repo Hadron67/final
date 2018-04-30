@@ -8,7 +8,7 @@ module ExceptionControl(
     input wire [31:0] cp0_status, cp0_cause,
     output reg exception, incEpc,
     output wire we_status, we_cause, we_epc, we_badVAddr,
-    output wire [31:0] out_status, out_cause
+    output wire [31:0] out_status, out_cause, etarget
 );
     // interrupt, tlb exception, segv, syscall
     reg [4:0] excCode;
@@ -19,6 +19,7 @@ module ExceptionControl(
     assign exl = cp0_status[1];
     assign erl = cp0_status[2];
     assign maksedIrq = cp0_status[15:8] & irq;
+    assign etarget = 32'h80000080;
 
     assign we_status = exception;
     assign we_cause = exception;

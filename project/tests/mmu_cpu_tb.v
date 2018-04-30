@@ -3,7 +3,7 @@
 
 `timescale 1ns/1ns
 module DummyMem #(
-    parameter MEM_SIZE = 4096 // 4K
+    parameter MEM_SIZE = 8 * 1024 * 1024 // 8M
 ) (
     input wire clk, res,
     input wire [31:0] db_dataOut, db_addr, vAddr,

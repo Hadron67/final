@@ -1,5 +1,5 @@
 module InstructionFetcher(
-    input wire [31:0] pc, epc, ra,
+    input wire [31:0] pc, epc, etarget, ra,
     input wire branch,
     input wire jmp,
     input wire z,
@@ -20,7 +20,7 @@ module InstructionFetcher(
         if(eret)
             nextpc1 = epc[31:2];
         else if(exception)
-            nextpc1 = 30'h20000020;
+            nextpc1 = etarget[31:2];
         else if(jr)
             nextpc1 = ra[31:2];
         else if(jmp)

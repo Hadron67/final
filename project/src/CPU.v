@@ -69,7 +69,7 @@ module CPUCore(
     wire we_status, we_cause, we_epc, we_badVAddr;
     
     reg [31:0] pc;
-    wire [31:0] nextpc, linkpc;
+    wire [31:0] nextpc, linkpc, etarget;
     reg [63:0] acc;
     wire [7:0] cp0RegDesc;
     wire [31:0] cp0RegOut;
@@ -243,6 +243,7 @@ module CPUCore(
         .ra(regOutA),
         .pc(pc),
         .epc(cp0_epc),
+        .etarget(etarget),
         .exception(exception),
         .nextpc(nextpc),
         .z(zero),
@@ -282,6 +283,7 @@ module CPUCore(
         .cp0_cause(cp0_cause),
         .exception(exception),
         .incEpc(incEpc),
+        .etarget(etarget),
         .we_status(we_status),
         .we_cause(we_cause),
         .we_epc(we_epc),
@@ -350,8 +352,10 @@ module CPUCore(
             pc <= 32'h80000000;
         end 
         else begin
-            if(nextState == S_INS_DECODE)
+            if(nextState == S_INS_DECODE) begin
                 ins <= db_dataIn;
+                
+            end
             if(state != S_INITIAL && state != S_FETCH_INSTRUCTION && nextState == S_FETCH_INSTRUCTION)
                 pc <= nextpc;
             state <= nextState;
