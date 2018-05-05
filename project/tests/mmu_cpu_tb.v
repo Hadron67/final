@@ -8,7 +8,6 @@ module DummyMem #(
     input wire clk, res,
     input wire [31:0] db_dataOut, db_addr, vAddr,
     input wire `MEM_ACCESS db_accessType,
-    input wire `MEM_LEN db_memLen,
     input wire db_io,
     output wire db_ready,
     output wire [31:0] db_dataIn,
@@ -18,81 +17,32 @@ module DummyMem #(
     localparam CMD_ADDR_WRITE_CHAR = 32'd1;
 
     reg [7:0] mem[MEM_SIZE - 1:0];
-    reg [31:0] dataOut;
-    reg [31:0] temp;
+    reg [31:0] addrLatch;
     wire [31:0] dataIn;
-    wire [31:0] r_b, r_h, r_w;
+    wire [31:0] addr2;
 
     assign dataIn = db_dataOut;
     assign db_ready = 1'b1; // always be ready
-    assign db_dataIn = dataOut;
-    assign r_b = {{24{1'b0}}, mem[db_addr]};
-    assign r_h = {{16{1'b0}}, mem[db_addr], mem[db_addr + 1]};
-    assign r_w = {mem[db_addr], mem[db_addr + 1], mem[db_addr + 2], mem[db_addr + 3]};
+    assign db_dataIn = {mem[addrLatch], mem[addrLatch + 1], mem[addrLatch + 2], mem[addrLatch + 3]};
+    assign addr2 = {db_addr[31:2], 2'd0};
 
     always @(posedge clk or posedge res) begin
         if(res) begin
-        
+
         end else begin
-            case(db_accessType)
-                `MEM_ACCESS_R: begin
-                    case(db_memLen)
-                        `MEM_LEN_B: begin
-                            `ifdef DEBUG_DISPLAY
-                            $display("read byte at address 0x%x (0x%x), data: 0x%x", db_addr, vAddr, r_b);
-                            `endif
-                            dataOut <= r_b;
-                        end
-                        `MEM_LEN_H: begin
-                            `ifdef DEBUG_DISPLAY
-                            $display("read half word at address 0x%x (0x%x), data: 0x%x", db_addr, vAddr, r_h);
-                            `endif
-                            dataOut <= r_h;
-                        end
-                        `MEM_LEN_W: begin
-                            `ifdef DEBUG_DISPLAY
-                            $display("read word at address 0x%x (0x%x), data: 0x%x", db_addr, vAddr, r_w);
-                            `endif
-                            dataOut <= r_w;
-                        end
-                    endcase
-                end
-                `MEM_ACCESS_W: begin
-                    if(db_io) begin
-                        if(db_addr == CMD_ADDR_HLT)
-                            hlt <= 1'b1;
-                        else if(db_addr == CMD_ADDR_WRITE_CHAR)
-                            $write("%c", dataIn[7:0]);
-                    end
-                    else
-                        case(db_memLen)
-                            `MEM_LEN_B: begin
-                                mem[db_addr] <= dataIn[7:0];
-                                `ifdef DEBUG_DISPLAY
-                                $display("write byte 0x%x to address 0x%x (0x%x)", dataIn[7:0], db_addr, vAddr);
-                                `endif
-                            end
-                            `MEM_LEN_H: begin
-                                {mem[db_addr], mem[db_addr + 1]} <= dataIn[15:0];
-                                `ifdef DEBUG_DISPLAY
-                                $display("write half word 0x%x to address 0x%x (0x%x)", dataIn[15:0], db_addr, vAddr);
-                                `endif
-                            end
-                            `MEM_LEN_W: begin
-                                {mem[db_addr], mem[db_addr + 1], mem[db_addr + 2], mem[db_addr + 3]} <= dataIn;
-                                `ifdef DEBUG_DISPLAY
-                                $display("write word 0x%x to address 0x%x (0x%x)", dataIn, db_addr, vAddr);
-                                `endif
-                            end
-                        endcase
-                end
-                `MEM_ACCESS_X: begin
-                    `ifdef DEBUG_DISPLAY
-                    $display(`FONT_YELLOW("execute memory at address 0x%x (0x%x), data: 0x%x"), db_addr, vAddr, r_w);
-                    `endif
-                    dataOut <= r_w;
-                end
-            endcase
+            if(db_io) begin
+                case(db_addr)
+                    CMD_ADDR_HLT: hlt <= 1'b1;
+                    CMD_ADDR_WRITE_CHAR: $write("%c", dataIn[7:0]);
+                endcase
+            end
+            else begin
+                case(db_accessType)
+                    `MEM_ACCESS_X: addrLatch <= addr2;
+                    `MEM_ACCESS_R: addrLatch <= addr2;
+                    `MEM_ACCESS_W: {mem[addr2], mem[addr2 + 1], mem[addr2 + 2], mem[addr2 + 3]} <= dataIn;
+                endcase
+            end
         end
     end
     integer file;
@@ -109,7 +59,7 @@ module mmu_cpu_tb();
     reg clk, res;
     wire [31:0] db_dataOut, db_addr, db_dataIn, vAddr;
     wire `MEM_ACCESS db_accessType;
-    wire `MEM_LEN db_memLen;
+    // wire `MEM_LEN db_memLen;
     wire db_ready, db_io;
     wire hlt;
     reg enableclk;
@@ -125,8 +75,8 @@ module mmu_cpu_tb();
         .db_io(db_io),
         .vAddr(vAddr),
         .db_ready(db_ready),
-        .db_accessType(db_accessType),
-        .db_memLen(db_memLen)
+        .db_accessType(db_accessType)
+        // .db_memLen(db_memLen)
     );
 
     DummyMem mem (
@@ -139,7 +89,7 @@ module mmu_cpu_tb();
         .vAddr(vAddr),
         .db_ready(db_ready),
         .db_accessType(db_accessType),
-        .db_memLen(db_memLen),
+        // .db_memLen(db_memLen),
         .hlt(hlt)
     );
 

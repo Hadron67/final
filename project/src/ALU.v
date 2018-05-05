@@ -14,7 +14,7 @@ module ALU(
         case (optr) 
             `ALUOP_PLUS:    result = A + B;
             `ALUOP_MINUS:   result =  A - B;
-            `ALUOP_TIMESU:  result = A * B ;
+            `ALUOP_TIMESU:  result = A * B;
             `ALUOP_TIMES:   result = $signed(A) * $signed(B);
             // XXX: division operations cost 2000+ logic elements!
             // ALUOP_DIVU: result = {A / B, A % B} ;

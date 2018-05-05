@@ -13,7 +13,8 @@ RegFile.v \
 random32.v \
 encoder.v \
 CPU_MMU.v \
-ExceptionControl.v
+ExceptionControl.v \
+cache.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 

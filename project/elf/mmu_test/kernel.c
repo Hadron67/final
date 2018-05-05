@@ -1,3 +1,4 @@
+// Lie group is a group which is also a manifold.
 #include "mipsreg.h"
 #include "kernel.h"
 

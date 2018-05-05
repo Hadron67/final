@@ -1,14 +1,14 @@
-.equ c0_index, $0
-.equ c0_random, $1
-.equ c0_entrylo0, $2
-.equ c0_entrylo1, $3
-.equ c0_context, $4
-.equ c0_pagemask, $5
-.equ c0_wired, $6
-.equ c0_entryhi, $10
-.equ cp0_status, $12
-.equ cp0_cause, $13
-    
+    .equ c0_index, $0
+    .equ c0_random, $1
+    .equ c0_entrylo0, $2
+    .equ c0_entrylo1, $3
+    .equ c0_context, $4
+    .equ c0_pagemask, $5
+    .equ c0_wired, $6
+    .equ c0_entryhi, $10
+    .equ cp0_status, $12
+    .equ cp0_cause, $13
+
     .section .text.start
     .align 4
 _start:
@@ -113,6 +113,8 @@ exceptionTable:
     .word handler_none
     .word handler_none
     .word handler_sys
+testVal:
+    .asciiz "hkm, soor\n"
 
     .section .bss
     .align 4
