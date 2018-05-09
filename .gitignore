@@ -5,3 +5,5 @@ demo/**
 docs/**
 
 *.out
+
+.vscode/**

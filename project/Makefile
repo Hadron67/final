@@ -14,7 +14,8 @@ random32.v \
 encoder.v \
 CPU_MMU.v \
 ExceptionControl.v \
-cache.v
+cache.v \
+ram.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 
@@ -30,7 +31,8 @@ SIM_TARGETS=\
 cpu \
 mmu \
 encoder \
-mmu_cpu
+mmu_cpu \
+cache
 
 ifeq ($(DEBUG), true)
 	IV_DEFS += -DDEBUG_DISPLAY

@@ -10,7 +10,7 @@ module CPU_MMU(
     output reg [31:0] db_dataOut,
     output reg [31:0] vAddr,
     input wire db_ready, 
-    output wire db_io,
+    output wire db_io, cachable,
     output reg `MEM_ACCESS db_accessType
 );
     localparam S_IDLE       = 4'd0;
@@ -41,7 +41,7 @@ module CPU_MMU(
         db2_accessType == `MEM_ACCESS_X;
     // assign db_accessType = nextState == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
     assign db2_ready = (state == S_ACCESS_MEM && db_ready && !needWriteback) || (state == S_WRITE_BACK && db_ready);
-    assign needWriteback = db2_accessType == `MEM_ACCESS_W && (memLenLatch == `MEM_LEN_B || memLenLatch == `MEM_LEN_H);
+    assign needWriteback = accessTypeLatch == `MEM_ACCESS_W && (memLenLatch == `MEM_LEN_B || memLenLatch == `MEM_LEN_H);
     
     always @* begin
         case(nextState)

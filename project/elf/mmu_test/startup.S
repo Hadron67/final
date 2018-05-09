@@ -113,8 +113,6 @@ exceptionTable:
     .word handler_none
     .word handler_none
     .word handler_sys
-testVal:
-    .asciiz "hkm, soor\n"
 
     .section .bss
     .align 4

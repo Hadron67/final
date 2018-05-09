@@ -59,14 +59,12 @@ module mmu_cpu_tb();
     reg clk, res;
     wire [31:0] db_dataOut, db_addr, db_dataIn, vAddr;
     wire `MEM_ACCESS db_accessType;
-    // wire `MEM_LEN db_memLen;
     wire db_ready, db_io;
     wire hlt;
     reg enableclk;
     integer cnt;
 
     CPU_MMU uut (
-        //     input wire clk, res,
         .clk(clk),
         .res(res),
         .db_dataIn(db_dataIn),
@@ -76,7 +74,6 @@ module mmu_cpu_tb();
         .vAddr(vAddr),
         .db_ready(db_ready),
         .db_accessType(db_accessType)
-        // .db_memLen(db_memLen)
     );
 
     DummyMem mem (

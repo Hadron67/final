@@ -4,9 +4,9 @@ module Ram #(
     parameter TAG = "RAM"
 ) (
     input wire clk, res, re, we,
-    input wire [ADDR_WIDTH - 1:0] addr,
+    input wire [ADDR_WIDTH - 1:0] readAddr, writeAddr,
     input wire [WIDTH - 1:0] dataIn,
-    output wire [WIDTH - 1:] dataOut
+    output wire [WIDTH - 1:0] dataOut
 );
     localparam SIZE = 1 << ADDR_WIDTH;
 
@@ -17,13 +17,13 @@ module Ram #(
     
     always @(posedge clk) begin
         if(we) begin
-            data[addr] <= dataIn;
+            data[writeAddr] <= dataIn;
             `ifdef DEBUG_DISPLAY
-            $display({"[", TAG, "] written data (0x%x) to address (0x%x)"}, dataIn, addr);
+            $display({"[", TAG, "] written data (0x%x) to address (0x%x)"}, dataIn, writeAddr);
             `endif
         end
         else if(re) begin
-            addrLatch <= addr;
+            addrLatch <= readAddr;
         end
     end
 

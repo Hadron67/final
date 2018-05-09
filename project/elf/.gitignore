@@ -2,7 +2,6 @@
 *.out
 *.bin
 *.hex
-*.out
 *.elf
 
 main
