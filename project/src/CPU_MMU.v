@@ -2,7 +2,9 @@
 `include "mmu.vh"
 `include "font.vh"
 
-module CPU_MMU(
+module CPU_MMU #(
+    parameter TAG = "CPU_MMU"
+)(
     input wire clk, res,
 
     input wire [31:0] db_dataIn,
@@ -116,7 +118,7 @@ module CPU_MMU(
         endcase
     end
 
-    CPUCore cpu (
+    CPUCore #(.TAG({TAG, "/CPU"})) cpu (
         .clk(clk),
         .res(res),
 
@@ -134,7 +136,7 @@ module CPU_MMU(
         .mmu_exception(mmu_exception)
     );
 
-    MMU mmu (
+    MMU #(.TAG({TAG, "/MMU"})) mmu (
         .clk(clk),
         .res(res),
         .addrValid(nextState == S_SAVE_ADDR),
@@ -173,22 +175,22 @@ module CPU_MMU(
         case(state)
             S_ACCESS_MEM:
                 if(mmu_exception != `MMU_EXCEPTION_NONE) begin
-                    $display(`FONT_RED("mmu exception %d occurs for address 0x%x (0x%x)"), mmu_exception, db_addr, vAddr);
+                    $display({`FONT_RED, "[", TAG, "]mmu exception %d occurs for address 0x%x (0x%x)", `FONT_END}, mmu_exception, db_addr, vAddr);
                 end
                 else if(db_ready) begin
                     if(needWriteback) begin
-                        $display("read memory at address 0x%x (0x%x) for writting back, data 0x%x", db_addr, vAddr, db_dataIn);
+                        $display({"[", TAG, "]read memory at address 0x%x (0x%x) for writting back, data 0x%x"}, db_addr, vAddr, db_dataIn);
                     end
                     else
                         case(accessTypeLatch)
-                            `MEM_ACCESS_R: $display("read memory at address 0x%x (0x%x), data 0x%x", db_addr, vAddr, db_dataIn);
-                            `MEM_ACCESS_W: $display("write memory at address 0x%x (0x%x), data 0x%x", db_addr, vAddr, writeDataLatch);
-                            `MEM_ACCESS_X: $display(`FONT_YELLOW("execute memory at address 0x%x (0x%x), data 0x%x"), db_addr, vAddr, db_dataIn);
+                            `MEM_ACCESS_R: $display({"[", TAG, "]read memory at address 0x%x (0x%x), data 0x%x"}, db_addr, vAddr, db_dataIn);
+                            `MEM_ACCESS_W: $display({"[", TAG, "]write memory at address 0x%x (0x%x), data 0x%x"}, db_addr, vAddr, writeDataLatch);
+                            `MEM_ACCESS_X: $display({`FONT_YELLOW, "[", TAG, "]execute memory at address 0x%x (0x%x), data 0x%x", `FONT_END}, db_addr, vAddr, db_dataIn);
                         endcase
                 end
             S_WRITE_BACK:
                 if(db_ready)
-                    $display("writting back memory at address 0x%x (0x%x), data 0x%x", db_addr, vAddr, writeDataLatch);
+                    $display({"[", TAG, "]writting back memory at address 0x%x (0x%x), data 0x%x"}, db_addr, vAddr, writeDataLatch);
         endcase
     end
 

@@ -1,6 +1,8 @@
 `include "mmu.vh"
 
-module CP0Regs(
+module CP0Regs #(
+    parameter TAG = "CP0Regs"
+)(
     input wire clk, res,
     input wire we, re,
     input wire [4:0] rd,
@@ -57,25 +59,25 @@ module CP0Regs(
             if(!isMMU && we && rd == 5'd8 || we_badVAddr) begin
                 cp0_badVAddr <= we_badVAddr ? in_badVAddr : dataIn;
                 `ifdef DEBUG_DISPLAY
-                $display("written cp0 register 'BadVAddr', data %x", we_badVAddr ? in_badVAddr : dataIn);
+                $display({"[", TAG, "]written cp0 register 'BadVAddr', data %x"}, we_badVAddr ? in_badVAddr : dataIn);
                 `endif
             end
             if(!isMMU && we && rd == 5'd12 || we_status) begin
                 cp0_status <= we_cause ? in_status : dataIn;
                 `ifdef DEBUG_DISPLAY
-                $display("written cp0 register 'Status', data %x", we_cause ? in_status : dataIn);
+                $display({"[", TAG, "]written cp0 register 'Status', data %x"}, we_cause ? in_status : dataIn);
                 `endif
             end
             if(!isMMU && we && rd == 5'd13 || we_cause) begin
                 cp0_cause <= we_cause ? in_cause : dataIn;
                 `ifdef DEBUG_DISPLAY
-                $display("written cp0 register 'Cause', data %x", we_cause ? in_cause : dataIn);
+                $display({"[", TAG, "]written cp0 register 'Cause', data %x"}, we_cause ? in_cause : dataIn);
                 `endif
             end
             if(!isMMU && we && rd == 5'd14 || we_epc) begin
                 cp0_epc <= we_epc ? in_epc : dataIn;
                 `ifdef DEBUG_DISPLAY
-                $display("written cp0 register 'EPC', data %x", we_epc ? in_epc : dataIn);
+                $display({"[", TAG, "]written cp0 register 'EPC', data %x"}, we_epc ? in_epc : dataIn);
                 `endif
             end
             if(!isMMU && re) begin
@@ -83,25 +85,25 @@ module CP0Regs(
                     5'd8 : begin
                         regOut <= cp0_badVAddr;
                         `ifdef DEBUG_DISPLAY
-                        $display("read cp0 register 'BadVAddr', data %x", cp0_badVAddr);
+                        $display({"[", TAG, "]read cp0 register 'BadVAddr', data %x"}, cp0_badVAddr);
                         `endif
                     end 
                     5'd12: begin
                         regOut <= cp0_status;
                         `ifdef DEBUG_DISPLAY
-                        $display("read cp0 register 'Status', data %x", cp0_status);
+                        $display({"[", TAG, "]read cp0 register 'Status', data %x"}, cp0_status);
                         `endif
                     end 
                     5'd13: begin
                         regOut <= cp0_cause;
                         `ifdef DEBUG_DISPLAY
-                        $display("read cp0 register 'Cause', data %x", cp0_cause);
+                        $display({"[", TAG, "]read cp0 register 'Cause', data %x"}, cp0_cause);
                         `endif
                     end 
                     5'd14: begin
                         regOut <= cp0_epc;
                         `ifdef DEBUG_DISPLAY
-                        $display("read cp0 register 'Epc', data %x", cp0_epc);
+                        $display({"[", TAG, "]read cp0 register 'Epc', data %x"}, cp0_epc);
                         `endif
                     end 
                 endcase

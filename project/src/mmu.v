@@ -3,6 +3,7 @@
 `include "CPU.vh"
 
 module MMU #(
+    parameter TAG = "MMU",
     parameter ENTRY_ADDR_WIDTH = 4
 ) (
     input wire clk, res,
@@ -130,49 +131,49 @@ module MMU #(
                 `MMU_REG_INDEX: begin
                     reg_index <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'Index' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'Index' register with data %x"}, mmu_dataIn);
                     `endif
                 end
                 `MMU_REG_RANDOM: begin
                     // reg_random <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("Warning: attempt to write read-only register 'Random'", mmu_dataIn);
+                    $display({"[", TAG, "]Warning: attempt to write read-only register 'Random'"}, mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_ENTRYLO0: begin
                     reg_entryLo0 <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'EntryLo0' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'EntryLo0' register with data %x"}, mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_ENTRYLO1: begin
                     reg_entryLo1 <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'EntryL01' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'EntryL01' register with data %x"}, mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_CTX: begin
                     reg_ctx <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'Context' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'Context' register with data %x"}, mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_PAGEMASK: begin
                     reg_pageMask <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'PageMask' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'PageMask' register with data %x"}, mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_WIRED: begin
                     reg_wired <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'Wired' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'Wired' register with data %x"}, mmu_dataIn);
                     `endif
                 end 
                 `MMU_REG_ENTRYHI: begin
                     reg_entryHi <= mmu_dataIn;
                     `ifdef DEBUG_DISPLAY
-                    $display("written mmu 'EntryHi' register with data %x", mmu_dataIn);
+                    $display({"[", TAG, "]written mmu 'EntryHi' register with data %x"}, mmu_dataIn);
                     `endif
                 end 
             endcase
@@ -181,49 +182,49 @@ module MMU #(
                 `MMU_REG_INDEX: begin
                     mmu_dataOut <= reg_index;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'Index' register, data %x", reg_index);
+                    $display({"[", TAG, "]read mmu 'Index' register, data %x"}, reg_index);
                     `endif
                 end 
                 `MMU_REG_RANDOM: begin
                     mmu_dataOut <= reg_random;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'Random' register, data %x", reg_random);
+                    $display({"[", TAG, "]read mmu 'Random' register, data %x"}, reg_random);
                     `endif
                 end 
                 `MMU_REG_ENTRYLO0: begin
                     mmu_dataOut <= reg_entryLo0;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'EntryLo0' register, data %x", reg_entryLo0);
+                    $display({"[", TAG, "]read mmu 'EntryLo0' register, data %x"}, reg_entryLo0);
                     `endif
                 end 
                 `MMU_REG_ENTRYLO1: begin
                     mmu_dataOut <= reg_entryLo1;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'EntryLo1' register, data %x", reg_entryLo1);
+                    $display({"[", TAG, "]read mmu 'EntryLo1' register, data %x"}, reg_entryLo1);
                     `endif
                 end 
                 `MMU_REG_CTX: begin
                     mmu_dataOut <= reg_ctx;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'Context' register, data %x", reg_ctx);
+                    $display({"[", TAG, "]read mmu 'Context' register, data %x"}, reg_ctx);
                     `endif
                 end 
                 `MMU_REG_PAGEMASK: begin
                     mmu_dataOut <= reg_pageMask;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'PageMask' register, data %x", reg_pageMask);
+                    $display({"[", TAG, "]read mmu 'PageMask' register, data %x"}, reg_pageMask);
                     `endif
                 end 
                 `MMU_REG_WIRED: begin
                     mmu_dataOut <= reg_wired;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'Wired' register, data %x", reg_wired);
+                    $display({"[", TAG, "]read mmu 'Wired' register, data %x"}, reg_wired);
                     `endif
                 end 
                 `MMU_REG_ENTRYHI: begin
                     mmu_dataOut <= reg_entryHi;
                     `ifdef DEBUG_DISPLAY
-                    $display("read mmu 'EntryHi' register, data %x", reg_entryHi);
+                    $display({"[", TAG, "]read mmu 'EntryHi' register, data %x"}, reg_entryHi);
                     `endif
                 end 
             endcase
@@ -231,20 +232,20 @@ module MMU #(
             if(found) begin
                 reg_index <= tlbOut_index;
                 `ifdef DEBUG_DISPLAY
-                $display("written matched index %d to register 'Index'", tlbOut_index);
+                $display({"[", TAG, "]written matched index %d to register 'Index'"}, tlbOut_index);
                 `endif
             end
             else begin
                 reg_index <= 1 << ENTRY_ADDR_WIDTH;
                 `ifdef DEBUG_DISPLAY
-                $display("no matched entry, written %d to register 'Index'", 1 << ENTRY_ADDR_WIDTH);
+                $display({"[", TAG, "]no matched entry, written %d to register 'Index'"}, 1 << ENTRY_ADDR_WIDTH);
                 `endif
             end
         end
         else if(convert && mmu_exception != `MMU_EXCEPTION_NONE) begin
             reg_ctx <= {reg_ctx[31:23], vAddrLatch[31:13], 4'd0};
             `ifdef DEBUG_DISPLAY
-            $display("written bad VPN2 0x%x to register 'Context'", vAddrLatch[31:13]);
+            $display({"[", TAG, "]written bad VPN2 0x%x to register 'Context'"}, vAddrLatch[31:13]);
             `endif
         end
     end

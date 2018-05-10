@@ -162,7 +162,7 @@ module cpu_tb();
     always begin
         if(hlt) begin
             $display("--------------------------------------------");
-            $display(`FONT_GREEN("exit command received, exit."));
+            $display({`FONT_GREEN, "exit command received, exit.", `FONT_END});
             $dumpflush;
             $stop();
         end 

@@ -7,7 +7,9 @@
 `include "mmu.vh"
 `include "CPU.vh"
 
-module CPUCore(
+module CPUCore #(
+    parameter TAG = "CPU"
+) (
     input wire clk,
     input wire res,
     output reg `CPU_MODE cpuMode,
@@ -291,7 +293,7 @@ module CPUCore(
         .out_status(out_status),
         .out_cause(out_cause)
     );
-    RegFile regs (
+    RegFile #(.TAG({TAG, "/RegFile"})) regs (
         .clk(clk),
         .regA(rs),
         .regB(rt),
@@ -302,7 +304,7 @@ module CPUCore(
         .we(writeReg && cycleEnd),
         .re(!readCP0 && !syscall && state == S_INS_DECODE && nextState == S_EXEC)
     );
-    CP0Regs cp0Regs (
+    CP0Regs #(.TAG({TAG, "/CP0Regs"})) cp0Regs (
         .clk(clk),
         .res(res),
         .we(writeCP0 && cycleEnd),

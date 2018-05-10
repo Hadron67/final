@@ -1,4 +1,6 @@
-module RegFile(
+module RegFile #(
+    parameter TAG = "RegFile"
+) (
     input wire clk,
     input wire [4:0] regA, regB, regW,
     input wire [31:0] dataIn,
@@ -13,14 +15,14 @@ module RegFile(
             if(regW != 0) begin
                 regs[regW] <= dataIn;
                 `ifdef DEBUG_DISPLAY
-                $display("written data (0x%x) to register $%d", dataIn, regW);
+                $display({"[", TAG, "]written data (0x%x) to register $%d"}, dataIn, regW);
                 `endif
             end
         end else if(re) begin
             A <= regA;
             B <= regB;
             `ifdef DEBUG_DISPLAY
-            $display("read register $%d and $%d, data (0x%x) and (0x%x)", regA, regB, regs[regA], regs[regB]);
+            $display({"[", TAG, "]read register $%d and $%d, data (0x%x) and (0x%x)"}, regA, regB, regs[regA], regs[regB]);
             `endif
         end
     end

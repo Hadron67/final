@@ -1,4 +1,5 @@
 `include "DataBus.vh"
+`include "font.vh"
 module Cache #(
     parameter TAG = "cache",
     parameter BLOCK_ADDR_WIDTH = 4,   // 16 blocks
@@ -37,8 +38,9 @@ module Cache #(
     reg [BLOCK_ADDR_WIDTH - 1:0] resetIndex;
     wire [INBLOCK_ADDR_WIDTH - 1:0] vAddr_inBlockAddr;
     reg [31:0] pAddrLatch;
-    wire [TAG_WIDTH - 1:0] tagOut_tag, pAddrLatch_tag;
-    reg [INBLOCK_ADDR_WIDTH - 1:0] inBlockAddr, nextInBlockAddr, dataWriteAddr;
+    wire [TAG_WIDTH - 1:0] tagOut_tag, pAddrLatch_tag; 
+    reg [TAG_WIDTH - 1:0] db_dataOut_tag, writeTagLatch;
+    reg [INBLOCK_ADDR_WIDTH - 1:0] inBlockAddr, db_dataOut_inBlockAddr, dataWriteAddr;
     wire [INBLOCK_ADDR_WIDTH - 1:0] addedInBlockAddr;
     reg [31:0] vAddrLatch, dataWrite;
     wire [TAG_ENTRY_WIDTH - 1:0] tagOut;
@@ -52,11 +54,11 @@ module Cache #(
     assign index = state == S_RES ? resetIndex : vAddr[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
     assign indexLatch = vAddrLatch[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
     assign vAddr_inBlockAddr = vAddr[INBLOCK_ADDR_WIDTH - 1:0];
-    assign tagOut_dirty = tagOut[TAG_WIDTH + 1];
-    assign tagOut_valid = tagOut[TAG_WIDTH];
-    assign tagOut_tag = tagOut[TAG_WIDTH - 1:0];
-
-    assign pAddrLatch_tag = pAddrLatch[TAG_WIDTH - 1:0];
+    // assign tagOut_dirty = tagOut[TAG_WIDTH + 1];
+    // assign tagOut_valid = tagOut[TAG_WIDTH];
+    // assign tagOut_tag = tagOut[TAG_WIDTH - 1:0];
+    assign {tagOut_valid, tagOut_dirty, tagOut_tag} = tagOut;
+    assign pAddrLatch_tag = pAddrLatch[31:32 - TAG_WIDTH];
     assign hit = tagOut_valid && (pAddrLatch_tag == tagOut_tag);
 
     assign countEnd = resetIndex == BLOCK_COUNT - 1;
@@ -66,18 +68,24 @@ module Cache #(
     assign writeDirtBit = accessTypeLatch == `MEM_ACCESS_W && hit && !tagOut_dirty;
 
     assign db_dataIn = dataOut;
-    assign db_ready = nextState == S_IDLE;
+    assign db_ready = state == S_IDLE || (state == S_CHK_HIT && hit && !writeDirtBit);
 
     assign dbOut_re = nextState == S_LOAD_BLOCK;
-    assign dbOut_we = nextState == S_WRITE_BACK;
+    assign dbOut_we = nextState == S_WRITE_BACK || nextState == S_WRITE_LAST_W;
     assign dbOut_dataOut = dataOut;
-    assign dbOut_addr = nextInBlockAddr;
+    assign dbOut_addr = {db_dataOut_tag, indexLatch, db_dataOut_inBlockAddr};
 
     always @* begin
         if(state == S_RES)
             tagIn = 0;
-        else if(nextState == S_LOAD_BLOCK)
-            tagIn = {1'b0, 1'b1, pAddrLatch_tag};
+        else if(state == S_CHK_HIT) begin
+            if(writeDirtBit) begin
+                tagIn = {1'b1, 1'b1, tagOut_tag};
+            end
+            else if(!hit) begin
+                tagIn = {1'b1, 1'b0, pAddrLatch_tag};
+            end 
+        end
         else 
             tagIn = 34'dx;
     end
@@ -91,18 +99,30 @@ module Cache #(
     end
     always @* begin
         case(nextState)
+            S_IDLE: dataWriteAddr = state == S_CHK_HIT ? vAddr_inBlockAddr : 'dx;
             S_CHK_HIT: dataWriteAddr = vAddr_inBlockAddr;
-            S_LOAD_BLOCK: dataWriteAddr = inBlockAddr;
+            S_LOAD_BLOCK,
             S_LOAD_LAST_W: dataWriteAddr = inBlockAddr;
-            S_WRITE_BACK: dataWriteAddr = inBlockAddr;
-            default: dataWriteAddr = 32'dx;
+            S_WRITE_BACK: dataWriteAddr = addedInBlockAddr;
+            S_READ_FIRST_W: dataWriteAddr = 0;
+            default: dataWriteAddr = 'dx;
         endcase
     end
     always @* begin
         case(nextState)
-            S_LOAD_BLOCK: nextInBlockAddr = state == S_CHK_HIT ? 0 : addedInBlockAddr;
-            S_WRITE_BACK: nextInBlockAddr = addedInBlockAddr;
-            default: nextInBlockAddr = 32'dx;
+            S_LOAD_LAST_W,
+            S_LOAD_BLOCK: db_dataOut_tag = pAddrLatch_tag;
+            S_WRITE_LAST_W,
+            S_WRITE_BACK: db_dataOut_tag = writeTagLatch;
+            default: db_dataOut_tag = 'dx;
+        endcase
+    end
+    always @* begin
+        case(nextState)
+            S_LOAD_BLOCK: db_dataOut_inBlockAddr = state == S_CHK_HIT || state == S_WRITE_BACK ? 0 : addedInBlockAddr;
+            S_WRITE_LAST_W,
+            S_WRITE_BACK: db_dataOut_inBlockAddr = inBlockAddr;
+            default: db_dataOut_inBlockAddr = 'dx;
         endcase
     end
     always @* begin
@@ -110,29 +130,33 @@ module Cache #(
             S_RES: nextState = countEnd ? S_IDLE : S_RES;
             S_IDLE: nextState = accessMem ? S_CHK_HIT : S_IDLE;
             S_CHK_HIT:
-                if(hit)
-                    nextState = accessMem ? S_CHK_HIT : S_IDLE;
+                if(hit) begin
+                    if(writeDirtBit)
+                        nextState = S_IDLE;
+                    else 
+                        nextState = accessMem ? S_CHK_HIT : S_IDLE;
+                end
                 else
                     nextState = tagOut_valid && tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
             S_LOAD_BLOCK: nextState = memEnd ? S_LOAD_LAST_W : S_LOAD_BLOCK;
-            S_WRITE_BACK: nextState = memEnd ? S_WRITE_LAST_W : S_WRITE_BACK;
+            S_WRITE_BACK: nextState = memEnd && dbOut_ready ? S_WRITE_LAST_W : S_WRITE_BACK;
             S_READ_FIRST_W: nextState = S_WRITE_BACK;
-            S_WRITE_LAST_W: nextState = dbOut_ready ? S_CHK_HIT : S_WRITE_LAST_W;
             S_LOAD_LAST_W: nextState = S_CHK_HIT;
+            S_WRITE_LAST_W: nextState = dbOut_ready ? S_LOAD_BLOCK : S_WRITE_LAST_W;
         endcase
     end
-    Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG("DataRam")) dataRam (
+    Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG({TAG, "/DataRam"})) dataRam (
         .clk(clk),
         .res(res),
-        .re(nextState == S_CHK_HIT || nextState == S_WRITE_BACK),
-        .we(db_accessType == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready),
-        .readAddr({index, vAddr_inBlockAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
+        .re(nextState == S_CHK_HIT || nextState == S_WRITE_BACK || nextState == S_READ_FIRST_W),
+        .we(accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready),
+        .readAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .writeAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .dataOut(dataOut),
         .dataIn(dataIn)
     );
 
-    Ram #(.WIDTH(TAG_ENTRY_WIDTH), .ADDR_WIDTH(BLOCK_ADDR_WIDTH), .TAG("TagRam")) tagRam (
+    Ram #(.WIDTH(TAG_ENTRY_WIDTH), .ADDR_WIDTH(BLOCK_ADDR_WIDTH), .TAG({TAG, "/TagRam"})) tagRam (
         .clk(clk),
         .res(res),
         .re(nextState == S_CHK_HIT),
@@ -153,7 +177,7 @@ module Cache #(
             if(state == S_RES) begin
                 resetIndex <= countEnd ? 0 : resetIndex + 1;
             end
-            if(nextState == S_CHK_HIT && state != S_LOAD_BLOCK) begin
+            if(nextState == S_CHK_HIT && state != S_LOAD_LAST_W) begin
                 pAddrLatch <= pAddr;
                 vAddrLatch <= vAddr;
                 accessTypeLatch <= db_accessType;
@@ -164,9 +188,20 @@ module Cache #(
                     inBlockAddr <= 0;
                 end
                 else if(dbOut_ready) begin
-                    inBlockAddr <= nextInBlockAddr;
+                    inBlockAddr <= addedInBlockAddr;
                 end
             end
+            else if(nextState == S_READ_FIRST_W) begin
+                inBlockAddr <= 'd0;
+            end
+            else if(nextState == S_WRITE_BACK) begin
+                if(dbOut_ready) begin
+                    inBlockAddr <= addedInBlockAddr;
+                end
+            end
+
+            if(state == S_CHK_HIT)
+                writeTagLatch <= tagOut_tag;
             
             state <= nextState;
         end
@@ -175,8 +210,19 @@ module Cache #(
     `ifdef DEBUG_DISPLAY
 
     always @(posedge clk) begin
-        if(state == S_RES && countEnd)
-            $display({"[", TAG, "]Initialization done."});
+        if(state == S_RES && countEnd) begin
+            $display({`FONT_GREEN, "[", TAG, "]Initialization done.", `FONT_END});
+        end
+        if(state == S_CHK_HIT) begin
+            if(hit)
+                $display({`FONT_GREEN, "[", TAG, "]hit for address 0x%x", `FONT_END}, vAddrLatch);
+            else begin
+                $display({`FONT_RED, "[", TAG, "]missed for address 0x%x", `FONT_END}, vAddrLatch);
+                if(tagOut_valid && tagOut_dirty) begin
+                    $display({"[", TAG, "]valid and dirty bit of block 0x%x is on, writting back"}, indexLatch);
+                end
+            end
+        end
     end
 
     `endif

@@ -107,13 +107,13 @@ module mmu_cpu_tb();
         #100;
         if(hlt) begin
             $display("------------------------------------------------");
-            $display(`FONT_GREEN("exit command received, exit."));
+            $display({`FONT_GREEN, "exit command received, exit.", `FONT_END});
             $dumpflush;
             $stop;
         end 
         else if(cnt >= 65535) begin
             $display("------------------------------------------------");
-            $display(`FONT_GREEN("time's up, exit."));
+            $display({`FONT_GREEN, "time's up, exit.", `FONT_END});
             $dumpflush;
             $stop;
         end
