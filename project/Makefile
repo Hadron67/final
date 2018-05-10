@@ -15,7 +15,8 @@ encoder.v \
 CPU_MMU.v \
 ExceptionControl.v \
 cache.v \
-ram.v
+ram.v \
+MipsCPU.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 

@@ -8,6 +8,7 @@ module Cache #(
     input wire clk, res,
     output wire ready,
 
+    input wire cachable,
     input wire [31:0] pAddr, vAddr, db_dataOut,
     output wire [31:0] db_dataIn,
     output wire db_ready,
@@ -64,16 +65,16 @@ module Cache #(
     assign countEnd = resetIndex == BLOCK_COUNT - 1;
     // assign memEnd = inBlockAddr == BLOCK_SIZE - 1;
     assign {memEnd, addedInBlockAddr} = inBlockAddr + 4;
-    assign accessMem = db_accessType != `MEM_ACCESS_NONE;
+    assign accessMem = cachable && db_accessType != `MEM_ACCESS_NONE;
     assign writeDirtBit = accessTypeLatch == `MEM_ACCESS_W && hit && !tagOut_dirty;
 
-    assign db_dataIn = dataOut;
-    assign db_ready = state == S_IDLE || (state == S_CHK_HIT && hit && !writeDirtBit);
+    assign db_dataIn = cachable ? dataOut : dbOut_dataIn;
+    assign db_ready = cachable ? (state == S_IDLE || (state == S_CHK_HIT && hit && !writeDirtBit)) : dbOut_ready;
 
-    assign dbOut_re = nextState == S_LOAD_BLOCK;
-    assign dbOut_we = nextState == S_WRITE_BACK || nextState == S_WRITE_LAST_W;
-    assign dbOut_dataOut = dataOut;
-    assign dbOut_addr = {db_dataOut_tag, indexLatch, db_dataOut_inBlockAddr};
+    assign dbOut_re = cachable ? (nextState == S_LOAD_BLOCK) : (db_accessType == `MEM_ACCESS_R || db_accessType == `MEM_ACCESS_X);
+    assign dbOut_we = cachable ? (nextState == S_WRITE_BACK || nextState == S_WRITE_LAST_W) : (db_accessType == `MEM_ACCESS_W);
+    assign dbOut_dataOut = cachable ? dataOut : db_dataOut;
+    assign dbOut_addr = cachable ? {db_dataOut_tag, indexLatch, db_dataOut_inBlockAddr} : pAddr;
 
     always @* begin
         if(state == S_RES)

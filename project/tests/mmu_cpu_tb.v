@@ -67,6 +67,7 @@ module mmu_cpu_tb();
     CPU_MMU uut (
         .clk(clk),
         .res(res),
+        .ready(1'b1),
         .db_dataIn(db_dataIn),
         .db_dataOut(db_dataOut),
         .db_addr(db_addr),

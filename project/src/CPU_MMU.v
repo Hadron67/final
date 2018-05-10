@@ -6,6 +6,7 @@ module CPU_MMU #(
     parameter TAG = "CPU_MMU"
 )(
     input wire clk, res,
+    input wire ready,
 
     input wire [31:0] db_dataIn,
     output wire [31:0] db_addr,
@@ -44,7 +45,8 @@ module CPU_MMU #(
     // assign db_accessType = nextState == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
     assign db2_ready = (state == S_ACCESS_MEM && db_ready && !needWriteback) || (state == S_WRITE_BACK && db_ready);
     assign needWriteback = accessTypeLatch == `MEM_ACCESS_W && (memLenLatch == `MEM_LEN_B || memLenLatch == `MEM_LEN_H);
-    
+    assign cachable = !db_io;
+
     always @* begin
         case(nextState)
             S_ACCESS_MEM: db_accessType = needWriteback ? `MEM_ACCESS_R : db2_accessType;
@@ -121,6 +123,7 @@ module CPU_MMU #(
     CPUCore #(.TAG({TAG, "/CPU"})) cpu (
         .clk(clk),
         .res(res),
+        .ready(ready),
 
         .db_dataIn(db2_dataIn),
         .db_dataOut(db2_dataOut),

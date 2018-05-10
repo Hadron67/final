@@ -15,6 +15,7 @@ module CPUCore #(
     output reg `CPU_MODE cpuMode,
     input wire extInt,
     input wire [7:0] irq,
+    input wire ready,
 
     input wire [31:0] db_dataIn,
     input wire db_ready,
@@ -198,7 +199,7 @@ module CPUCore #(
     // combinational logic to get next state to go.
     always @* begin: getNextState
         case(state)
-            S_INITIAL: nextState = S_FETCH_INSTRUCTION;
+            S_INITIAL: nextState = ready ? S_FETCH_INSTRUCTION : S_INITIAL;
             S_FETCH_INSTRUCTION: 
                 if(mmu_exception != `MMU_EXCEPTION_NONE) begin
                     nextState = S_EXCEPTION;

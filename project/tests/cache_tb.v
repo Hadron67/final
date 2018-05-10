@@ -60,6 +60,7 @@ module cache_tb();
         .clk(clk),
         .res(res),
         .ready(ready),
+        .cachable(1'b1),
 
         .pAddr(pAddr),
         .vAddr(vAddr),
