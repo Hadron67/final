@@ -3,7 +3,7 @@
 module Cache #(
     parameter TAG = "cache",
     parameter BLOCK_ADDR_WIDTH = 4,   // 16 blocks
-    parameter INBLOCK_ADDR_WIDTH = 10 // 1K
+    parameter INBLOCK_ADDR_WIDTH = 10  // 1K
 ) (
     input wire clk, res,
     output wire ready,
@@ -19,7 +19,7 @@ module Cache #(
     output wire [31:0] dbOut_addr, dbOut_dataOut,
     output wire dbOut_re, dbOut_we
 );
-    localparam TAG_WIDTH = 32 - BLOCK_ADDR_WIDTH - INBLOCK_ADDR_WIDTH;
+    localparam TAG_WIDTH = 32 - INBLOCK_ADDR_WIDTH;
     localparam TAG_ENTRY_WIDTH = TAG_WIDTH + 2;
     localparam BLOCK_COUNT = 1 << BLOCK_ADDR_WIDTH;
     localparam BLOCK_SIZE = 1 << INBLOCK_ADDR_WIDTH;
@@ -38,7 +38,7 @@ module Cache #(
     wire [BLOCK_ADDR_WIDTH - 1:0] index, indexLatch;
     reg [BLOCK_ADDR_WIDTH - 1:0] resetIndex;
     wire [INBLOCK_ADDR_WIDTH - 1:0] vAddr_inBlockAddr;
-    reg [31:0] pAddrLatch;
+    reg [31:0] pAddrLatch, db_dataOutLatch;
     wire [TAG_WIDTH - 1:0] tagOut_tag, pAddrLatch_tag; 
     reg [TAG_WIDTH - 1:0] db_dataOut_tag, writeTagLatch;
     reg [INBLOCK_ADDR_WIDTH - 1:0] inBlockAddr, db_dataOut_inBlockAddr, dataWriteAddr;
@@ -55,9 +55,6 @@ module Cache #(
     assign index = state == S_RES ? resetIndex : vAddr[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
     assign indexLatch = vAddrLatch[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
     assign vAddr_inBlockAddr = vAddr[INBLOCK_ADDR_WIDTH - 1:0];
-    // assign tagOut_dirty = tagOut[TAG_WIDTH + 1];
-    // assign tagOut_valid = tagOut[TAG_WIDTH];
-    // assign tagOut_tag = tagOut[TAG_WIDTH - 1:0];
     assign {tagOut_valid, tagOut_dirty, tagOut_tag} = tagOut;
     assign pAddrLatch_tag = pAddrLatch[31:32 - TAG_WIDTH];
     assign hit = tagOut_valid && (pAddrLatch_tag == tagOut_tag);
@@ -74,7 +71,7 @@ module Cache #(
     assign dbOut_re = cachable ? (nextState == S_LOAD_BLOCK) : (db_accessType == `MEM_ACCESS_R || db_accessType == `MEM_ACCESS_X);
     assign dbOut_we = cachable ? (nextState == S_WRITE_BACK || nextState == S_WRITE_LAST_W) : (db_accessType == `MEM_ACCESS_W);
     assign dbOut_dataOut = cachable ? dataOut : db_dataOut;
-    assign dbOut_addr = cachable ? {db_dataOut_tag, indexLatch, db_dataOut_inBlockAddr} : pAddr;
+    assign dbOut_addr = cachable ? {db_dataOut_tag, db_dataOut_inBlockAddr} : pAddr;
 
     always @* begin
         if(state == S_RES)
@@ -94,7 +91,7 @@ module Cache #(
         if(state == S_LOAD_BLOCK && dbOut_ready)
             dataIn = dbOut_dataIn;
         else if(state == S_CHK_HIT && hit)
-            dataIn = db_dataOut;
+            dataIn = db_dataOutLatch;
         else
             dataIn = 32'dx;
     end
@@ -182,6 +179,7 @@ module Cache #(
                 pAddrLatch <= pAddr;
                 vAddrLatch <= vAddr;
                 accessTypeLatch <= db_accessType;
+                db_dataOutLatch <= db_dataOut;
             end
 
             if(nextState == S_LOAD_BLOCK) begin
@@ -212,15 +210,15 @@ module Cache #(
 
     always @(posedge clk) begin
         if(state == S_RES && countEnd) begin
-            $display({`FONT_GREEN, "[", TAG, "]Initialization done.", `FONT_END});
+            $display({`FONT_GREEN, "[", TAG, "] Initialization done.", `FONT_END});
         end
         if(state == S_CHK_HIT) begin
             if(hit)
-                $display({`FONT_GREEN, "[", TAG, "]hit for address 0x%x", `FONT_END}, vAddrLatch);
+                $display({`FONT_GREEN, "[", TAG, "] hit for address 0x%x", `FONT_END}, vAddrLatch);
             else begin
-                $display({`FONT_RED, "[", TAG, "]missed for address 0x%x", `FONT_END}, vAddrLatch);
+                $display({`FONT_RED, "[", TAG, "] missed for address 0x%x (0x%x)", `FONT_END}, vAddrLatch, pAddrLatch);
                 if(tagOut_valid && tagOut_dirty) begin
-                    $display({"[", TAG, "]valid and dirty bit of block 0x%x is on, writting back"}, indexLatch);
+                    $display({"[", TAG, "] valid and dirty bit of block 0x%x is on, writting back"}, indexLatch);
                 end
             end
         end

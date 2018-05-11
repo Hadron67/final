@@ -113,7 +113,8 @@ exceptionTable:
     .word handler_none
     .word handler_none
     .word handler_sys
-
+test:
+    .asciiz "soor"
     .section .bss
     .align 4
     .fill 256, 4, 0

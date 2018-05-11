@@ -37,8 +37,8 @@ module DummyMem #(
         for(i = 0; i < 16; i = i + 1) begin
             mem[i] = i + 2;
         end
-        for(i = 17; i < 32; i = i + 1) begin
-            mem[i] = 3;
+        for(i = 0; i < 16; i = i + 1) begin
+            mem[i + 32'h100] = 3;
         end
         {mem[32'h100], mem[32'h101], mem[32'h102], mem[32'h103]} = 32'h bad_cafe;
     end
@@ -146,13 +146,14 @@ module cache_tb();
         db_accessType = `MEM_ACCESS_NONE;
         #100;
         resetCache();
-        readMem ({24'd0, 4'd0, 4'd0});
-        writeMem({24'd0, 4'd0, 4'd0}, 32'h dead_beef);
-        writeMem({24'd0, 4'd0, 4'd0}, 32'h c0d_feed);
-
-        writeMem({24'd0, 4'd3, 4'd2}, 32'h bad_c0de);
         readMem ({24'd1, 4'd0, 4'd0});
-        writeMem({24'd2, 4'd3, 4'd2}, 32'h bad_cafe);
+        writeMem({24'd1, 4'd0, 4'd0}, 32'h dead_beef);
+
+        readMem ({24'd1, 4'd0, 4'd0});
+        // writeMem({24'd0, 4'd3, 4'd4}, 32'h bad_c0de);
+        // readMem ({24'd0, 4'd0, 4'd0});
+        // readMem ({24'd1, 4'd0, 4'd0});
+        // writeMem({24'd2, 4'd3, 4'd4}, 32'h bad_cafe);
         #10000;
         $dumpflush;
         $stop;

@@ -15,6 +15,7 @@ module DummyMem #(
 );
     localparam CMD_ADDR_HLT        = 32'd0;
     localparam CMD_ADDR_WRITE_CHAR = 32'd1;
+    localparam CMD_ADDR_WRITE_NUM  = 32'd2;
 
     reg [7:0] mem[MEM_SIZE - 1:0];
     reg [31:0] addrLatch;
@@ -34,6 +35,7 @@ module DummyMem #(
                 case(db_addr)
                     CMD_ADDR_HLT: hlt <= 1'b1;
                     CMD_ADDR_WRITE_CHAR: $write("%c", dataIn[7:0]);
+                    CMD_ADDR_WRITE_NUM: $write("%x", dataIn);
                 endcase
             end
             else begin

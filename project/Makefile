@@ -33,7 +33,8 @@ cpu \
 mmu \
 encoder \
 mmu_cpu \
-cache
+cache \
+mipscpu
 
 ifeq ($(DEBUG), true)
 	IV_DEFS += -DDEBUG_DISPLAY

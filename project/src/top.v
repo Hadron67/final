@@ -9,29 +9,21 @@ module top(
     output wire tx,
     
     // dummy ports
-    input  wire [31:0] db_dataIn,
-    input  wire        db_ready,
+    input wire [31:0] db_dataIn,
+    input wire db_ready,
     output wire [31:0] db_dataOut,
-    output wire  [31:0] db_addr,
-    output wire `MEM_ACCESS db_accessType
-);  
-    CPU_MMU cpu_et_mmu (
+    output wire [31:0] db_addr,
+    output wire db_re, db_we, db_io
+);
+    MipsCPU cpu (
         .clk(clk),
-        .res(res),
+        .res(~res_n),
+        .db_ready(db_ready),
         .db_dataIn(db_dataIn),
         .db_dataOut(db_dataOut),
         .db_addr(db_addr),
-        .db_ready(db_ready),
-        .db_accessType(db_accessType)
+        .db_re(db_re),
+        .db_we(db_we),
+        .db_io(db_io)
     );
-    // CPUCore cpu (
-    //     .clk(clk),
-    //     .res(res),
-
-    //     .db_dataIn(db_dataIn),
-    //     .db_dataOut(db_dataOut),
-    //     .db_addr(db_addr),
-    //     .db_ready(db_ready),
-    //     .db_accessType(db_accessType)
-    // );
 endmodule

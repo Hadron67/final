@@ -87,7 +87,7 @@ static void initTlb(){
 }
 
 static void do_pageFault(){
-
+    *((int *)0xa0000000) = 0;
 }
 static int ensureTlbEntry(){
     
@@ -130,13 +130,17 @@ static const char testString[] = "hkm, soor\n";
 extern uint32_t __frame1_start;
 extern uint32_t __frame2_start;
 
+#define PTABLE_ADDR (0x800 << 13)
+
 static void runTest(){
     const char *testAddr = (const char *)(0x2 << 13);
-    PageTable_init(&testTable);
-    // map VPN2 0x0 to frame1, and 0x2 to frame2
-    PageTable_writeEntry(&testTable, 0x0, 1, 0, (uint32_t)&__frame1_start >> 12, 1);
+    PageTable *table = (PageTable *)(0x0);
+    // map VPN2 PTABLE_ADDR to frame1, and 0x2 to frame2
     writeTlb(0, 0x0, 1, 0, (uint32_t)&__frame1_start >> 12, 1);
-    PageTable_writeEntry(&testTable, 0x2, 1, 0, (uint32_t)&__frame2_start >> 12, 1);
+
+    PageTable_init(table);
+    PageTable_writeEntry(table, 0x0, 1, 0, (uint32_t)&__frame1_start >> 12, 1);
+    PageTable_writeEntry(table, 0x2, 1, 0, (uint32_t)&__frame2_start >> 12, 1);
     MTC0(0x0, C0_CONTEXT);
     printString(testAddr);
 }
