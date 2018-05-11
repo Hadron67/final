@@ -106,6 +106,7 @@ module mipscpu_tb;
         res = 0;
         wait(hlt);
         $display({`FONT_GREEN, "exit command received, exit.", `FONT_END});
+        $display({`FONT_GREEN, "simulation done in %d cycles", `FONT_END}, cnt);
         $dumpflush;
         $stop;
     end

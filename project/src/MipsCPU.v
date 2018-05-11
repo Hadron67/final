@@ -3,7 +3,7 @@
 module MipsCPU #(
     parameter TAG = "MipsCPU",
     parameter CACHE_BLOCK_ADDR_WIDTH = 4,
-    parameter CACHE_INBLOCK_ADDR_WIDTH = 10
+    parameter CACHE_INBLOCK_ADDR_WIDTH = 9
 )(
     input wire clk, res,
     input wire db_ready,

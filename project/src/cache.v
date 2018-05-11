@@ -2,8 +2,9 @@
 `include "font.vh"
 module Cache #(
     parameter TAG = "cache",
+    parameter ASSOC_ADDR_WIDTH = 0,
     parameter BLOCK_ADDR_WIDTH = 4,   // 16 blocks
-    parameter INBLOCK_ADDR_WIDTH = 10  // 1K
+    parameter INBLOCK_ADDR_WIDTH = 9  // 256B, or 16 instructions
 ) (
     input wire clk, res,
     output wire ready,
@@ -23,6 +24,8 @@ module Cache #(
     localparam TAG_ENTRY_WIDTH = TAG_WIDTH + 2;
     localparam BLOCK_COUNT = 1 << BLOCK_ADDR_WIDTH;
     localparam BLOCK_SIZE = 1 << INBLOCK_ADDR_WIDTH;
+
+    localparam ASSOC_COUNT = 1 << ASSOC_ADDR_WIDTH;
     
     localparam S_RES           = 3'd0;
     localparam S_IDLE          = 3'd1;
@@ -39,28 +42,37 @@ module Cache #(
     reg [BLOCK_ADDR_WIDTH - 1:0] resetIndex;
     wire [INBLOCK_ADDR_WIDTH - 1:0] vAddr_inBlockAddr;
     reg [31:0] pAddrLatch, db_dataOutLatch;
-    wire [TAG_WIDTH - 1:0] tagOut_tag, pAddrLatch_tag; 
+    wire [TAG_WIDTH - 1:0] tagOut_tag, pAddrLatch_tag, tagOut1_tag, tagOut2_tag; 
     reg [TAG_WIDTH - 1:0] db_dataOut_tag, writeTagLatch;
     reg [INBLOCK_ADDR_WIDTH - 1:0] inBlockAddr, db_dataOut_inBlockAddr, dataWriteAddr;
     wire [INBLOCK_ADDR_WIDTH - 1:0] addedInBlockAddr;
     reg [31:0] vAddrLatch, dataWrite;
-    wire [TAG_ENTRY_WIDTH - 1:0] tagOut;
     reg [TAG_ENTRY_WIDTH - 1:0] tagIn;
-    wire [31:0] dataOut;
+    wire [TAG_ENTRY_WIDTH - 1:0] tagOut, tagOut1, tagOut2;
+    wire [31:0] dataOut, dataOut1, dataOut2;
     reg [31:0] dataIn;
-    wire tagOut_dirty, tagOut_valid, hit;
+    wire tagOut_dirty, tagOut_valid, hit, tagOut1_dirty, tagOut1_valid, tagOut2_dirty, tagOut2_valid, hit1, hit2;
     wire accessMem, countEnd, memEnd, writeDirtBit;
-    
+    wire whichEntry, hitEntry;
+    reg victim;
+
     assign ready = state != S_RES;
     assign index = state == S_RES ? resetIndex : vAddr[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
     assign indexLatch = vAddrLatch[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
     assign vAddr_inBlockAddr = vAddr[INBLOCK_ADDR_WIDTH - 1:0];
+    assign {tagOut1_valid, tagOut1_dirty, tagOut1_tag} = tagOut1;
+    assign {tagOut2_valid, tagOut2_dirty, tagOut2_tag} = tagOut2;
     assign {tagOut_valid, tagOut_dirty, tagOut_tag} = tagOut;
+    assign tagOut = whichEntry ? tagOut2 : tagOut1;
+    assign dataOut = whichEntry ? dataOut2 : dataOut1;
     assign pAddrLatch_tag = pAddrLatch[31:32 - TAG_WIDTH];
-    assign hit = tagOut_valid && (pAddrLatch_tag == tagOut_tag);
+    assign hit1 = tagOut1_valid && (pAddrLatch_tag == tagOut1_tag);
+    assign hit2 = tagOut2_valid && (pAddrLatch_tag == tagOut2_tag);
+    assign hit = hit1 || hit2;
+    assign hitEntry = hit1 ? 1'b0 : hit2 ? 1'b1 : 1'bx;
+    assign whichEntry = hit ? hitEntry : victim;
 
     assign countEnd = resetIndex == BLOCK_COUNT - 1;
-    // assign memEnd = inBlockAddr == BLOCK_SIZE - 1;
     assign {memEnd, addedInBlockAddr} = inBlockAddr + 4;
     assign accessMem = cachable && db_accessType != `MEM_ACCESS_NONE;
     assign writeDirtBit = accessTypeLatch == `MEM_ACCESS_W && hit && !tagOut_dirty;
@@ -74,6 +86,20 @@ module Cache #(
     assign dbOut_addr = cachable ? {db_dataOut_tag, db_dataOut_inBlockAddr} : pAddr;
 
     always @* begin
+        case({tagOut2_valid, tagOut1_valid})
+            2'b00,
+            2'b01: victim = 1'b1;
+            2'b10: victim = 1'b0;
+            2'b11: 
+                case({tagOut2_dirty, tagOut1_dirty})
+                    2'b00,
+                    2'b01: victim = 1'b1;
+                    2'b10: victim = 1'b0;
+                    2'b11: victim = 1'b0; // TODO: random
+                endcase
+        endcase
+    end
+    always @* begin
         if(state == S_RES)
             tagIn = 0;
         else if(state == S_CHK_HIT) begin
@@ -83,6 +109,8 @@ module Cache #(
             else if(!hit) begin
                 tagIn = {1'b1, 1'b0, pAddrLatch_tag};
             end 
+            else
+                tagIn = 34'dx;
         end
         else 
             tagIn = 34'dx;
@@ -135,7 +163,7 @@ module Cache #(
                         nextState = accessMem ? S_CHK_HIT : S_IDLE;
                 end
                 else
-                    nextState = tagOut_valid && tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
+                    nextState = tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
             S_LOAD_BLOCK: nextState = memEnd ? S_LOAD_LAST_W : S_LOAD_BLOCK;
             S_WRITE_BACK: nextState = memEnd && dbOut_ready ? S_WRITE_LAST_W : S_WRITE_BACK;
             S_READ_FIRST_W: nextState = S_WRITE_BACK;
@@ -143,25 +171,47 @@ module Cache #(
             S_WRITE_LAST_W: nextState = dbOut_ready ? S_LOAD_BLOCK : S_WRITE_LAST_W;
         endcase
     end
-    Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG({TAG, "/DataRam"})) dataRam (
+    Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG({TAG, "/DataRam1"})) dataRam1 (
         .clk(clk),
         .res(res),
         .re(nextState == S_CHK_HIT || nextState == S_WRITE_BACK || nextState == S_READ_FIRST_W),
-        .we(accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready),
+        .we(~whichEntry && (accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready)),
         .readAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .writeAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
-        .dataOut(dataOut),
+        .dataOut(dataOut1),
         .dataIn(dataIn)
     );
 
-    Ram #(.WIDTH(TAG_ENTRY_WIDTH), .ADDR_WIDTH(BLOCK_ADDR_WIDTH), .TAG({TAG, "/TagRam"})) tagRam (
+    Ram #(.WIDTH(TAG_ENTRY_WIDTH), .ADDR_WIDTH(BLOCK_ADDR_WIDTH), .TAG({TAG, "/TagRam1"})) tagRam1 (
         .clk(clk),
         .res(res),
         .re(nextState == S_CHK_HIT),
-        .we(state == S_RES || state == S_CHK_HIT && (writeDirtBit || !hit)),
+        .we(state == S_RES || ~whichEntry && (state == S_CHK_HIT && (writeDirtBit || !hit))),
         .writeAddr(index),
         .readAddr(index),
-        .dataOut(tagOut),
+        .dataOut(tagOut1),
+        .dataIn(tagIn)
+    );
+
+    Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG({TAG, "/DataRam2"})) dataRam2 (
+        .clk(clk),
+        .res(res),
+        .re(nextState == S_CHK_HIT || nextState == S_WRITE_BACK || nextState == S_READ_FIRST_W),
+        .we(whichEntry && (accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready)),
+        .readAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
+        .writeAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
+        .dataOut(dataOut2),
+        .dataIn(dataIn)
+    );
+
+    Ram #(.WIDTH(TAG_ENTRY_WIDTH), .ADDR_WIDTH(BLOCK_ADDR_WIDTH), .TAG({TAG, "/TagRam2"})) tagRam2 (
+        .clk(clk),
+        .res(res),
+        .re(nextState == S_CHK_HIT),
+        .we(state == S_RES || whichEntry && (state == S_CHK_HIT && (writeDirtBit || !hit))),
+        .writeAddr(index),
+        .readAddr(index),
+        .dataOut(tagOut2),
         .dataIn(tagIn)
     );
 
