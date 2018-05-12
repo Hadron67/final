@@ -24,9 +24,9 @@ module Ram #(
         end
         else if(re) begin
             addrLatch <= readAddr;
-            `ifdef DEBUG_DISPLAY
-            $display({"[", TAG, "] read data at address (0x%x)"}, readAddr);
-            `endif
+            // `ifdef DEBUG_DISPLAY
+            // $display({"[", TAG, "] read data at address (0x%x)"}, readAddr);
+            // `endif
         end
     end
 

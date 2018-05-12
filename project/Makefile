@@ -16,13 +16,16 @@ CPU_MMU.v \
 ExceptionControl.v \
 cache.v \
 ram.v \
-MipsCPU.v
+MipsCPU.v \
+Serial.v \
+MemInterface.v \
+top.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)
 
 INC_DIR=src/
 IV=iverilog
-IV_DEFS=-DOUT_DIR=\"$(SIM_OUTDIR)\" -D__IV -DELF_DIR=\"elf\"
+IV_DEFS=-DOUT_DIR=\"$(SIM_OUTDIR)\" -D__IV -DELF_DIR=\"elf\" -DDEBUG
 VVP=vvp -n
 
 SIM_SOURCE_DIR=tests
@@ -34,7 +37,9 @@ mmu \
 encoder \
 mmu_cpu \
 cache \
-mipscpu
+mipscpu \
+uart \
+top
 
 ifeq ($(DEBUG), true)
 	IV_DEFS += -DDEBUG_DISPLAY
