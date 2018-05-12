@@ -27,16 +27,19 @@ module Cache #(
 
     localparam ASSOC_COUNT = 1 << ASSOC_ADDR_WIDTH;
     
-    localparam S_RES           = 3'd0;
-    localparam S_IDLE          = 3'd1;
-    localparam S_CHK_HIT       = 3'd2;
-    localparam S_LOAD_BLOCK    = 3'd3;
-    localparam S_WRITE_BACK    = 3'd4;
-    localparam S_READ_FIRST_W  = 3'd5;
-    localparam S_WRITE_LAST_W  = 3'd6;
-    localparam S_LOAD_LAST_W   = 3'd7;
+    localparam S_RES               = 4'd0;
+    localparam S_IDLE              = 4'd1;
+    localparam S_CHK_HIT           = 4'd2;
+    localparam S_LOAD_BLOCK        = 4'd3;
+    localparam S_WRITE_BACK        = 4'd4;
+    localparam S_READ_FIRST_W      = 4'd5;
+    localparam S_WRITE_LAST_W      = 4'd6;
+    localparam S_LOAD_LAST_W       = 4'd7;
+    localparam S_LOAD_BLOCK_WAIT   = 4'd8;
+    localparam S_WRITE_BACK_WAIT   = 4'd9;
+    localparam S_WRITE_LAST_W_WAIT = 4'd10;
 
-    reg [2:0] state, nextState;
+    reg [3:0] state, nextState;
     reg `MEM_ACCESS accessTypeLatch;
     wire [BLOCK_ADDR_WIDTH - 1:0] index, indexLatch;
     reg [BLOCK_ADDR_WIDTH - 1:0] resetIndex;
@@ -55,6 +58,7 @@ module Cache #(
     wire accessMem, countEnd, memEnd, writeDirtBit;
     wire whichEntry, hitEntry;
     reg victim;
+    wire readReady;
 
     assign ready = state != S_RES;
     assign index = state == S_RES ? resetIndex : vAddr[INBLOCK_ADDR_WIDTH + BLOCK_ADDR_WIDTH - 1:INBLOCK_ADDR_WIDTH];
@@ -71,6 +75,7 @@ module Cache #(
     assign hit = hit1 || hit2;
     assign hitEntry = hit1 ? 1'b0 : hit2 ? 1'b1 : 1'bx;
     assign whichEntry = hit ? hitEntry : victim;
+    assign readReady = dbOut_ready && (state == S_LOAD_BLOCK || state == S_LOAD_BLOCK_WAIT);
 
     assign countEnd = resetIndex == BLOCK_COUNT - 1;
     assign {memEnd, addedInBlockAddr} = inBlockAddr + 4;
@@ -116,7 +121,7 @@ module Cache #(
             tagIn = 34'dx;
     end
     always @* begin
-        if(state == S_LOAD_BLOCK && dbOut_ready)
+        if((state == S_LOAD_BLOCK || state == S_LOAD_BLOCK_WAIT) && dbOut_ready)
             dataIn = dbOut_dataIn;
         else if(state == S_CHK_HIT && hit)
             dataIn = db_dataOutLatch;
@@ -128,6 +133,7 @@ module Cache #(
             S_IDLE: dataWriteAddr = state == S_CHK_HIT ? vAddr_inBlockAddr : 'dx;
             S_CHK_HIT: dataWriteAddr = vAddr_inBlockAddr;
             S_LOAD_BLOCK,
+            S_LOAD_BLOCK_WAIT,
             S_LOAD_LAST_W: dataWriteAddr = inBlockAddr;
             S_WRITE_BACK: dataWriteAddr = addedInBlockAddr;
             S_READ_FIRST_W: dataWriteAddr = 0;
@@ -164,18 +170,21 @@ module Cache #(
                 end
                 else
                     nextState = tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
-            S_LOAD_BLOCK: nextState = memEnd ? S_LOAD_LAST_W : S_LOAD_BLOCK;
-            S_WRITE_BACK: nextState = memEnd && dbOut_ready ? S_WRITE_LAST_W : S_WRITE_BACK;
+            S_LOAD_BLOCK,
+            S_LOAD_BLOCK_WAIT: nextState = memEnd && dbOut_ready ? S_LOAD_LAST_W : (dbOut_ready ? S_LOAD_BLOCK : S_LOAD_BLOCK_WAIT);
+            S_WRITE_BACK,
+            S_WRITE_BACK_WAIT: nextState = memEnd && dbOut_ready ? S_WRITE_LAST_W : (dbOut_ready ? S_WRITE_BACK : S_WRITE_BACK_WAIT);
             S_READ_FIRST_W: nextState = S_WRITE_BACK;
             S_LOAD_LAST_W: nextState = S_CHK_HIT;
-            S_WRITE_LAST_W: nextState = dbOut_ready ? S_LOAD_BLOCK : S_WRITE_LAST_W;
+            S_WRITE_LAST_W,
+            S_WRITE_LAST_W_WAIT: nextState = dbOut_ready ? S_LOAD_BLOCK : S_WRITE_LAST_W_WAIT;
         endcase
     end
     Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG({TAG, "/DataRam1"})) dataRam1 (
         .clk(clk),
         .res(res),
         .re(nextState == S_CHK_HIT || nextState == S_WRITE_BACK || nextState == S_READ_FIRST_W),
-        .we(~whichEntry && (accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready)),
+        .we(~whichEntry && (accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || readReady)),
         .readAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .writeAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .dataOut(dataOut1),
@@ -197,7 +206,7 @@ module Cache #(
         .clk(clk),
         .res(res),
         .re(nextState == S_CHK_HIT || nextState == S_WRITE_BACK || nextState == S_READ_FIRST_W),
-        .we(whichEntry && (accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || state == S_LOAD_BLOCK && dbOut_ready)),
+        .we(whichEntry && (accessTypeLatch == `MEM_ACCESS_W && state == S_CHK_HIT && hit || readReady)),
         .readAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .writeAddr({index, dataWriteAddr[INBLOCK_ADDR_WIDTH - 1:2]}),
         .dataOut(dataOut2),
@@ -232,7 +241,7 @@ module Cache #(
                 db_dataOutLatch <= db_dataOut;
             end
 
-            if(nextState == S_LOAD_BLOCK) begin
+            if(nextState == S_LOAD_BLOCK || nextState == S_LOAD_BLOCK_WAIT) begin
                 if(state == S_CHK_HIT) begin
                     inBlockAddr <= 0;
                 end
@@ -243,7 +252,7 @@ module Cache #(
             else if(nextState == S_READ_FIRST_W) begin
                 inBlockAddr <= 'd0;
             end
-            else if(nextState == S_WRITE_BACK) begin
+            else if(nextState == S_WRITE_BACK || nextState == S_WRITE_BACK_WAIT) begin
                 if(dbOut_ready) begin
                     inBlockAddr <= addedInBlockAddr;
                 end

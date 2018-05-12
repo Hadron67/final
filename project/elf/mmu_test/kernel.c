@@ -146,6 +146,7 @@ static void runTest(){
 }
 
 void initKernel(){
+    printString("hkm\n");
     initTlb();
     printString("TLB initialized\n");
     runTest();

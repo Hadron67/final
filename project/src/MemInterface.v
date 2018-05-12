@@ -1,4 +1,5 @@
 `include "DataBus.vh"
+`include "font.vh"
 
 module MemInterface #(
     parameter BAUD_RATE = 9600,
@@ -20,13 +21,15 @@ module MemInterface #(
     localparam CMD_READ     = 8'd1;
     localparam CMD_WRITE    = 8'd2;
     localparam CMD_PRINT    = 8'd3;
+    localparam CMD_HLT      = 8'd4;
 
     localparam S_IDLE      = 3'd0;
     localparam S_SEND      = 3'd1;
+    localparam S_SEND_WAIT = 3'd2;
     localparam S_WAIT_DATA = 3'd3;
 
-    localparam IO_ADDR_HLT   = 32'ha000_0000;
-    localparam IO_ADDR_PRINT = 32'ha000_0001;
+    localparam IO_ADDR_HLT   = 32'h0000_0000;
+    localparam IO_ADDR_PRINT = 32'h0000_0001;
 
     reg [2:0] state, nextState;
     reg [TX_MAX_LEN * 8 - 1:0] dataOut;
@@ -43,8 +46,9 @@ module MemInterface #(
     assign send = state == S_IDLE && nextState == S_SEND;
 
     always @* begin
-        if(db_io) begin
+        if(db_io && db_we) begin
             case(db_addr)
+                IO_ADDR_HLT:   cmd = CMD_HLT;
                 IO_ADDR_PRINT: cmd = CMD_PRINT;
                 default: cmd = CMD_NONE;
             endcase
@@ -65,6 +69,7 @@ module MemInterface #(
             CMD_READ,
             CMD_WRITE: dataOut = {db_dataOut, db_addr, cmd};
             CMD_PRINT: dataOut = {32'd0, db_dataOut, cmd};
+            CMD_HLT:   dataOut = {64'd0, cmd};
         endcase
     end
     always @* begin
@@ -72,13 +77,15 @@ module MemInterface #(
             CMD_READ: outLen_1 = 8'd4;
             CMD_WRITE: outLen_1 = 8'd8;
             CMD_PRINT: outLen_1 = 8'd1;
+            CMD_HLT: outLen_1 = 8'd0;
             default: outLen_1 = 8'dx;
         endcase
     end
     always @* begin
         case(state)
             S_IDLE: nextState = cmd != CMD_NONE ? S_SEND : S_IDLE;
-            S_SEND: nextState = txReady ? (needWait ? S_WAIT_DATA : S_IDLE) : S_SEND;
+            S_SEND,
+            S_SEND_WAIT: nextState = txReady ? (needWait ? S_WAIT_DATA : S_IDLE) : S_SEND_WAIT;
             S_WAIT_DATA: nextState = recved ? S_IDLE : S_WAIT_DATA;
             default: nextState = 3'dx;
         endcase
@@ -116,13 +123,14 @@ module MemInterface #(
         end
     end
 
-    `ifdef DEBUG
-    always @(posedge clk) begin
-        if(state == S_IDLE && db_we && db_addr == IO_ADDR_HLT) begin
-            $dumpflush;
-            $stop;
-        end
-    end
-    `endif
+    // `ifdef DEBUG
+    // always @(posedge clk) begin
+    //     if(state == S_IDLE && db_we && db_addr == IO_ADDR_HLT) begin
+
+    //         $dumpflush;
+    //         $stop;
+    //     end
+    // end
+    // `endif
 
 endmodule // MemInterface

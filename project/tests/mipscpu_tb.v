@@ -34,8 +34,9 @@ module DummyMem #(
                         CMD_ADDR_WRITE_CHAR: $write("%c", db_dataOut[7:0]);
                     endcase
                 end
-                else
+                else begin
                     {mem[addr], mem[addr + 1], mem[addr + 2], mem[addr + 3]} <= db_dataOut;
+                end
             end
             else if(db_re) begin
                 addrLatch <= addr;

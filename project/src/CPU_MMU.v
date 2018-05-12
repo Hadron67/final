@@ -16,10 +16,12 @@ module CPU_MMU #(
     output wire db_io, cachable,
     output reg `MEM_ACCESS db_accessType
 );
-    localparam S_IDLE       = 4'd0;
-    localparam S_SAVE_ADDR  = 4'd1;
-    localparam S_ACCESS_MEM = 4'd2;
-    localparam S_WRITE_BACK = 4'd3;
+    localparam S_IDLE            = 4'd0;
+    localparam S_SAVE_ADDR       = 4'd1;
+    localparam S_ACCESS_MEM      = 4'd2;
+    localparam S_WRITE_BACK      = 4'd3;
+    localparam S_ACCESS_MEM_WAIT = 4'd4;
+    localparam S_WRITE_BACK_WAIT = 4'd5;
 
     reg [3:0] state, nextState;
 
@@ -43,13 +45,13 @@ module CPU_MMU #(
         db2_accessType == `MEM_ACCESS_R ||
         db2_accessType == `MEM_ACCESS_X;
     // assign db_accessType = nextState == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
-    assign db2_ready = (state == S_ACCESS_MEM && db_ready && !needWriteback) || (state == S_WRITE_BACK && db_ready);
+    assign db2_ready = ((state == S_ACCESS_MEM || state == S_ACCESS_MEM_WAIT) && db_ready && !needWriteback) || ((state == S_WRITE_BACK || state == S_WRITE_BACK_WAIT) && db_ready);
     assign needWriteback = accessTypeLatch == `MEM_ACCESS_W && (memLenLatch == `MEM_LEN_B || memLenLatch == `MEM_LEN_H);
     assign cachable = !db_io;
 
     always @* begin
         case(nextState)
-            S_ACCESS_MEM: db_accessType = needWriteback ? `MEM_ACCESS_R : db2_accessType;
+            S_ACCESS_MEM: db_accessType = needWriteback ? `MEM_ACCESS_R : accessTypeLatch;
             S_WRITE_BACK: db_accessType = `MEM_ACCESS_W;
             default: db_accessType = `MEM_ACCESS_NONE;
         endcase
@@ -103,7 +105,8 @@ module CPU_MMU #(
                     nextState = S_IDLE;
             end
             S_SAVE_ADDR: nextState = S_ACCESS_MEM;
-            S_ACCESS_MEM: 
+            S_ACCESS_MEM,
+            S_ACCESS_MEM_WAIT: 
                 if(mmu_exception != `MMU_EXCEPTION_NONE || db_ready) begin
                     if(needWriteback && mmu_exception == `MMU_EXCEPTION_NONE)
                         nextState = S_WRITE_BACK;
@@ -111,12 +114,13 @@ module CPU_MMU #(
                         nextState = accessMem ? S_SAVE_ADDR : S_IDLE;
                 end
                 else
-                    nextState = S_ACCESS_MEM;
-            S_WRITE_BACK:
+                    nextState = S_ACCESS_MEM_WAIT;
+            S_WRITE_BACK,
+            S_WRITE_BACK_WAIT:
                 if(db_ready)
                     nextState = accessMem ? S_SAVE_ADDR : S_IDLE;
                 else
-                    nextState = S_ACCESS_MEM;
+                    nextState = S_WRITE_BACK_WAIT;
         endcase
     end
 

@@ -38,6 +38,11 @@ module CPUCore #(
     localparam S_EXCEPTION         = 4'd6;
     localparam S_INS_DECODE        = 4'd8;
 
+    localparam S_FETCH_INSTRUCTION_WAIT = 4'd9;
+    localparam S_READ_MEM_WAIT          = 4'd10;
+    localparam S_WRITE_MEM_WAIT         = 4'd11;
+
+
     integer i;
     reg [31:0] ins;
     wire [4:0] rs, rt, rd, shamt;
@@ -191,8 +196,8 @@ module CPUCore #(
         case(state)
             S_INS_DECODE: cycleEnd = isTlbOp || nop || eret;
             S_EXEC: cycleEnd = !readMem && !writeMem;
-            S_READ_MEM: cycleEnd = db_ready;
-            S_WRITE_MEM: cycleEnd = db_ready;
+            S_READ_MEM, S_READ_MEM_WAIT: cycleEnd = db_ready;
+            S_WRITE_MEM, S_WRITE_MEM_WAIT: cycleEnd = db_ready;
             default: cycleEnd = 1'b0;
         endcase
     end
@@ -200,14 +205,15 @@ module CPUCore #(
     always @* begin: getNextState
         case(state)
             S_INITIAL: nextState = ready ? S_FETCH_INSTRUCTION : S_INITIAL;
-            S_FETCH_INSTRUCTION: 
+            S_FETCH_INSTRUCTION,
+            S_FETCH_INSTRUCTION_WAIT:
                 if(mmu_exception != `MMU_EXCEPTION_NONE) begin
                     nextState = S_EXCEPTION;
                 end 
                 else if(db_ready)
                     nextState = S_INS_DECODE;
                 else 
-                    nextState = S_FETCH_INSTRUCTION;
+                    nextState = S_FETCH_INSTRUCTION_WAIT;
             S_INS_DECODE:
                 if(isTlbOp || nop || eret)
                     nextState = S_FETCH_INSTRUCTION;
@@ -222,16 +228,18 @@ module CPUCore #(
                     nextState = S_WRITE_MEM;
                 else
                     nextState = exception ? S_EXCEPTION : S_FETCH_INSTRUCTION;
-            S_READ_MEM:
+            S_READ_MEM,
+            S_READ_MEM_WAIT:
                 if(mmu_exception != `MMU_EXCEPTION_NONE)
                     nextState = S_EXCEPTION;
                 else 
-                    nextState = db_ready ? S_FETCH_INSTRUCTION : S_READ_MEM;
-            S_WRITE_MEM:
+                    nextState = db_ready ? S_FETCH_INSTRUCTION : S_READ_MEM_WAIT;
+            S_WRITE_MEM,
+            S_WRITE_MEM_WAIT:
                 if(mmu_exception != `MMU_EXCEPTION_NONE)
                     nextState = S_EXCEPTION;
                 else
-                    nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM;
+                    nextState = db_ready ? S_FETCH_INSTRUCTION : S_WRITE_MEM_WAIT;
             // TODO: process exceptions
             S_EXCEPTION: nextState = S_FETCH_INSTRUCTION;
         endcase
@@ -359,7 +367,7 @@ module CPUCore #(
                 ins <= db_dataIn;
                 
             end
-            if(state != S_INITIAL && state != S_FETCH_INSTRUCTION && nextState == S_FETCH_INSTRUCTION)
+            if(state != S_INITIAL && nextState == S_FETCH_INSTRUCTION)
                 pc <= nextpc;
             state <= nextState;
         end

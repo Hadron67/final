@@ -8,6 +8,7 @@ module top_tb #(
     localparam CMD_READ  = 8'd1;
     localparam CMD_WRITE = 8'd2;
     localparam CMD_PRINT = 8'd3;
+    localparam CMD_HLT   = 8'd4;
 
     reg clk, res, tx;
     reg [7:0] cmd, printChar;
@@ -55,30 +56,38 @@ module top_tb #(
     always begin
         wait(~rx);
         uartRx(cmd);
-        $display("command 0x%x", cmd);
-        uartRx(addr[7:0]);
-        uartRx(addr[15:8]);
-        uartRx(addr[23:16]);
-        uartRx(addr[31:24]);
-        case(cmd)
-            CMD_READ: begin
-                uartTx(mem[addr + 3]);
-                uartTx(mem[addr + 2]);
-                uartTx(mem[addr + 1]);
-                uartTx(mem[addr]);
-            end
-            CMD_WRITE: begin
-                uartRx(writeData[7:0]);
-                uartRx(writeData[15:8]);
-                uartRx(writeData[23:16]);
-                uartRx(writeData[31:24]);
-                {mem[addr], mem[addr + 1], mem[addr + 2], mem[addr + 3]} = writeData;
-            end
-            CMD_PRINT: begin
-                uartRx(printChar);
-                $write("%c", printChar);
-            end
-        endcase
+        // $display("command 0x%x", cmd);
+        if(cmd == CMD_HLT) begin
+            $display({`FONT_GREEN, "exit command received, exit.", `FONT_END});
+            $dumpflush;
+            $stop;
+        end
+        else if(cmd == CMD_PRINT) begin
+            uartRx(printChar);
+            $write("%c", printChar);
+            // $display("char: %c (0x%x)", printChar, printChar);
+        end
+        else begin
+            uartRx(addr[7:0]);
+            uartRx(addr[15:8]);
+            uartRx(addr[23:16]);
+            uartRx(addr[31:24]);
+            case(cmd)
+                CMD_READ: begin
+                    uartTx(mem[addr + 3]);
+                    uartTx(mem[addr + 2]);
+                    uartTx(mem[addr + 1]);
+                    uartTx(mem[addr]);
+                end
+                CMD_WRITE: begin
+                    uartRx(writeData[7:0]);
+                    uartRx(writeData[15:8]);
+                    uartRx(writeData[23:16]);
+                    uartRx(writeData[31:24]);
+                    {mem[addr], mem[addr + 1], mem[addr + 2], mem[addr + 3]} = writeData;
+                end
+            endcase
+        end
     end
 
     always begin
