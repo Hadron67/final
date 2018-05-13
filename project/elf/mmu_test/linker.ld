@@ -14,6 +14,9 @@ SECTIONS {
     } > UNMAPPED
     .text : ALIGN(4) {
         *(.text)
+        __test_start = .;
+        *(.text.tester)
+        __test_end = .;
     } > UNMAPPED
     .data : ALIGN(4) {
         *(.data)

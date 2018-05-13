@@ -16,11 +16,11 @@ _start:
     # $gp should be read-only from now on
     la $sp, kernelStack
     move $fp, $sp
-    # jal initKernel
-    li $t2, 'a'
-    
+    jal initKernel
     lui $t1, 0xa000
     sw $zero, 0($t1)
+infiniLoop:
+    b infiniLoop
 
     .section .text.ihandler
     .align 4
@@ -123,7 +123,7 @@ test:
 kernelStack:
     .fill 256, 4, 0
 exceptionStack:
-    
+
     .global _start
     .type _start, @function
 

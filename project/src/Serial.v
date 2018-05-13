@@ -7,7 +7,7 @@ module UART_tx #(
     input wire res,
     input wire [DATA_MAX_LEN * 8 - 1:0] data,
     input wire [31:0] len_1,
-    input wire send,
+    input wire send, resend,
     output wire ready,
     output reg tx
 );
@@ -47,6 +47,9 @@ module UART_tx #(
                     if(send) begin
                         dataLatch <= data;
                         lenLatch_1 <= len_1;
+                        state <= S_START;
+                    end
+                    else if(resend) begin
                         state <= S_START;
                     end
                 end
@@ -93,6 +96,7 @@ module UART_rx #(
 ) (
     input wire clk,
     input wire res,
+    input wire en,
     input wire rx,
     input wire [31:0] len_1,
     output reg [DATA_MAX_LEN * 8 - 1:0] data,
@@ -123,7 +127,7 @@ module UART_rx #(
         else
             case(state)
                 S_IDLE:
-                    if(~rx) begin
+                    if(~rx && en) begin
                         state <= S_START;
                         lenLatch_1 <= len_1;
                     end
@@ -158,7 +162,7 @@ module UART_rx #(
                         cycleCount <= 0;
                         if(recvBase == lenLatch_1) begin
                             recvBase <= 0;
-                            if(~rx) begin
+                            if(~rx && en) begin
                                 state <= S_START;
                                 lenLatch_1 <= len_1;
                             end

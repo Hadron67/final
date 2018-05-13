@@ -6,24 +6,20 @@ module top #(
 ) (
     input wire clk,
     input wire res_n,
-    input wire key1,
-    
     input wire rx,
-    output wire tx
-    
-    // dummy ports
-    // input wire [31:0] db_dataIn,
-    // input wire db_ready,
-    // output wire [31:0] db_dataOut,
-    // output wire [31:0] db_addr,
-    // output wire db_re, db_we, db_io
+    output wire tx,
+
+    output wire [7:0] seg_data,
+    output wire [5:0] seg_sel
 );
     wire [31:0] db_dataIn, db_dataOut, db_addr;
-    wire db_re, db_we, db_io, db_ready;
+    wire db_re, db_we, db_io, db_ready, res;
+
+    assign res = ~res_n;
     
     MipsCPU cpu (
         .clk(clk),
-        .res(~res_n),
+        .res(res),
         .db_ready(db_ready),
         .db_dataIn(db_dataIn),
         .db_dataOut(db_dataOut),
@@ -35,7 +31,7 @@ module top #(
 
     MemInterface #(.CLK(CLK), .BAUD_RATE(BAUD_RATE)) memIt (
         .clk(clk),
-        .res(~res_n),
+        .res(res),
         .db_ready(db_ready),
         .db_dataIn(db_dataIn),
         .db_dataOut(db_dataOut),
@@ -45,6 +41,17 @@ module top #(
         .db_io(db_io),
         .rx(rx),
         .tx(tx)
+    );
+
+    Peripheral #(.CLK(CLK)) peripheralCtl (
+        .clk(clk),
+        .res(res),
+        .re(db_re && db_io),
+        .we(db_we && db_io),
+        .dataIn(db_dataOut),
+        .addr(db_addr),
+        .seg_data(seg_data),
+        .seg_sel(seg_sel)
     );
 
 endmodule

@@ -19,6 +19,7 @@ ram.v \
 MipsCPU.v \
 Serial.v \
 MemInterface.v \
+peripheral.v \
 top.v
 
 SOURCE=$(SOURCE_FILES:%=$(SOURCE_DIR)/%)

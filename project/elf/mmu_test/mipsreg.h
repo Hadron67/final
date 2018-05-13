@@ -16,6 +16,13 @@
 
 #define IO_PUTCHAR(a) (*((int *)0xa0000001) = (a))
 
+#define IO_WRITE_SEG0(a) (*((int *)0xa0000010) = (a))
+#define IO_WRITE_SEG1(a) (*((int *)0xa0000014) = (a))
+#define IO_WRITE_SEG2(a) (*((int *)0xa0000018) = (a))
+#define IO_WRITE_SEG3(a) (*((int *)0xa000001c) = (a))
+#define IO_WRITE_SEG4(a) (*((int *)0xa0000020) = (a))
+#define IO_WRITE_SEG5(a) (*((int *)0xa0000024) = (a))
+
 #define MFR(v, reg)  __asm__ volatile ("move %0, " reg: "=r" (v));
 #define MTR(reg, v)  __asm__ volatile ("move " reg ", %0":: "r"(v));
 #define MFC0(v, reg) __asm__ volatile ("mfc0 %0, " reg: "=r" (v));

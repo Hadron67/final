@@ -53,8 +53,7 @@ module top_tb #(
         end
     endtask
 
-    always begin
-        wait(~rx);
+    always @(negedge rx) begin
         uartRx(cmd);
         // $display("command 0x%x", cmd);
         if(cmd == CMD_HLT) begin

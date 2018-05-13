@@ -70,11 +70,27 @@ set_global_assignment -name RESERVE_DATA0_AFTER_CONFIGURATION "USE AS REGULAR IO
 set_global_assignment -name RESERVE_DATA1_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
+
 set_location_assignment PIN_E1 -to clk
 set_location_assignment PIN_N1 -to tx
 set_location_assignment PIN_M2 -to rx
 set_location_assignment PIN_N13 -to res_n
 set_location_assignment PIN_M15 -to key1
+set_location_assignment PIN_R16 -to seg_data[7]
+set_location_assignment PIN_N15 -to seg_data[6]
+set_location_assignment PIN_N12 -to seg_data[5]
+set_location_assignment PIN_P15 -to seg_data[4]
+set_location_assignment PIN_T15 -to seg_data[3]
+set_location_assignment PIN_P16 -to seg_data[2]
+set_location_assignment PIN_N16 -to seg_data[1]
+set_location_assignment PIN_R14 -to seg_data[0]
+set_location_assignment PIN_M11 -to seg_sel[5]
+set_location_assignment PIN_P11 -to seg_sel[4]
+set_location_assignment PIN_N11 -to seg_sel[3]
+set_location_assignment PIN_M10 -to seg_sel[2]
+set_location_assignment PIN_P9 -to seg_sel[1]
+set_location_assignment PIN_N9 -to seg_sel[0]
+
 set_global_assignment -name EDA_TEST_BENCH_NAME cpu_tb -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id cpu_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME cpu_tb -section_id cpu_tb
@@ -98,6 +114,7 @@ set_global_assignment -name VERILOG_FILE src/cache.v
 set_global_assignment -name VERILOG_FILE src/MipsCPU.v
 set_global_assignment -name VERILOG_FILE src/ram.v
 set_global_assignment -name VERILOG_FILE src/MemInterface.v
+set_global_assignment -name VERILOG_FILE src/Peripheral.v
 set_global_assignment -name BDF_FILE cpu.bdf
 set_global_assignment -name EDA_TEST_BENCH_FILE tests/cpu_tb.v -section_id cpu_tb
 set_global_assignment -name SEARCH_PATH src/

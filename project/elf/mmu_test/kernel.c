@@ -22,7 +22,22 @@ typedef struct _Process {
     uint8_t asid;
 } Process;
 
+typedef void (*runnable)();
+
 GlobalTable globalTable;
+
+static const int segDecode[] = {
+    0b00111111,//0
+    0b00000110,//1
+    0b01011011,//2
+    0b01001111,//3
+    0b01100110,//4
+    0b01101101,//5
+    0b01111101,//6
+    0b00000111,//7
+    0b01111111,//8
+    0b01101111,//9
+};
 
 static void PageTable_init(PageTable *t){
     int i;
@@ -106,7 +121,9 @@ static void do_tlbRefill(int isStore){
         MTC0(entry->entryLo0, C0_ENTRYLO0);
         MTC0(entry->entryLo1, C0_ENTRYLO1);
         MTC0(entry->pageMask, C0_PAGEMASK);
-        TLBWR();
+
+        MTC0(2, C0_INDEX);
+        TLBWI();
     }
     else {
         printString("invalid entry, do page fault\n");
@@ -115,25 +132,32 @@ static void do_tlbRefill(int isStore){
 }
 
 void handler_tlbMod(){
-
+    printString("modified\n");
 }
 void handler_tlbLoad(){
+    printString("load\n");
     do_tlbRefill(0);
 }
 void handler_tlbStore(){
+    printString("store\n");
     do_tlbRefill(1);
 }
 
 static PageTable testTable AT_FRAME("1");
 static const char testString[] AT_FRAME("2");
-static const char testString[] = "hkm, soor\n";
+static const char testString[512] = "hkm, soor\n";
 extern uint32_t __frame1_start;
 extern uint32_t __frame2_start;
+extern uint32_t __test_start, __test_end;
+
+static void segTest() __attribute__ ((section(".text.tester")));
+static void runTest();
+static void copyWords(uint32_t *dest, const uint32_t *src, uint32_t size);
 
 #define PTABLE_ADDR (0x800 << 13)
 
 static void runTest(){
-    const char *testAddr = (const char *)(0x2 << 13);
+    char *testAddr = (const char *)(0x2 << 13);
     PageTable *table = (PageTable *)(0x0);
     // map VPN2 PTABLE_ADDR to frame1, and 0x2 to frame2
     writeTlb(0, 0x0, 1, 0, (uint32_t)&__frame1_start >> 12, 1);
@@ -143,11 +167,46 @@ static void runTest(){
     PageTable_writeEntry(table, 0x2, 1, 0, (uint32_t)&__frame2_start >> 12, 1);
     MTC0(0x0, C0_CONTEXT);
     printString(testAddr);
+    IO_WRITE_SEG0(segDecode[3]);
+    copyWords((uint32_t *)testAddr, (uint32_t *)&__test_start, (uint32_t)&__test_end - (uint32_t)&__test_start);
+    ((runnable)testAddr)();
+}
+
+static void copyWords(uint32_t *dest, const uint32_t *src, uint32_t size){
+    size >>= 2;
+    while(size --> 0){
+        *dest++ = *src++;
+    }
+    printString("copy done\n");
+}
+
+static void segTest(){
+    int a = 0, b = 0, c = 0, j;
+    while(1){
+        IO_WRITE_SEG5(segDecode[a]);
+        IO_WRITE_SEG4(segDecode[b]);
+        IO_WRITE_SEG3(segDecode[c] | 0x80);
+        a++;
+        if(a == 10){
+            a = 0;
+            b++;
+            if(b == 6){
+                b = 0;
+                c++;
+                if(c == 10)
+                    c = 0;
+            }
+        }
+        for(j = 0; j < 1000000; j++);
+    }
 }
 
 void initKernel(){
+    IO_WRITE_SEG0(segDecode[1]);
     printString("hkm\n");
     initTlb();
     printString("TLB initialized\n");
+    IO_WRITE_SEG0(segDecode[2]);
     runTest();
+    IO_WRITE_SEG0(segDecode[4]);
 }
