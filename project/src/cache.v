@@ -38,6 +38,8 @@ module Cache #(
     localparam S_LOAD_BLOCK_WAIT   = 4'd8;
     localparam S_WRITE_BACK_WAIT   = 4'd9;
     localparam S_WRITE_LAST_W_WAIT = 4'd10;
+    localparam S_WRITE             = 4'd11;
+    localparam S_WRITE_WAIT        = 4'd12;
 
     reg [3:0] state, nextState;
     reg `MEM_ACCESS accessTypeLatch;
@@ -48,7 +50,7 @@ module Cache #(
     wire [TAG_WIDTH - 1:0] tagOut_tag, pAddrLatch_tag, tagOut1_tag, tagOut2_tag; 
     reg [TAG_WIDTH - 1:0] db_dataOut_tag, writeTagLatch;
     reg [INBLOCK_ADDR_WIDTH - 1:0] inBlockAddr, db_dataOut_inBlockAddr, dataWriteAddr;
-    wire [INBLOCK_ADDR_WIDTH - 1:0] addedInBlockAddr;
+    wire [INBLOCK_ADDR_WIDTH - 1:0] addedInBlockAddr, pAddrLatch_inBlockAddr;
     reg [31:0] vAddrLatch, dataWrite;
     reg [TAG_ENTRY_WIDTH - 1:0] tagIn;
     wire [TAG_ENTRY_WIDTH - 1:0] tagOut, tagOut1, tagOut2;
@@ -70,6 +72,7 @@ module Cache #(
     assign tagOut = whichEntry ? tagOut2 : tagOut1;
     assign dataOut = whichEntry ? dataOut2 : dataOut1;
     assign pAddrLatch_tag = pAddrLatch[31:32 - TAG_WIDTH];
+    assign pAddrLatch_inBlockAddr = pAddrLatch[INBLOCK_ADDR_WIDTH - 1:0];
     assign hit1 = tagOut1_valid && (pAddrLatch_tag == tagOut1_tag);
     assign hit2 = tagOut2_valid && (pAddrLatch_tag == tagOut2_tag);
     assign hit = hit1 || hit2;
@@ -142,6 +145,7 @@ module Cache #(
     end
     always @* begin
         case(nextState)
+            S_WRITE,
             S_LOAD_LAST_W,
             S_LOAD_BLOCK: db_dataOut_tag = pAddrLatch_tag;
             S_WRITE_LAST_W,
@@ -154,6 +158,7 @@ module Cache #(
             S_LOAD_BLOCK: db_dataOut_inBlockAddr = state == S_CHK_HIT || state == S_WRITE_BACK ? 0 : addedInBlockAddr;
             S_WRITE_LAST_W,
             S_WRITE_BACK: db_dataOut_inBlockAddr = inBlockAddr;
+            S_WRITE: db_dataOut_inBlockAddr = pAddrLatch_inBlockAddr;
             default: db_dataOut_inBlockAddr = 'dx;
         endcase
     end
@@ -168,8 +173,12 @@ module Cache #(
                     else 
                         nextState = accessMem ? S_CHK_HIT : S_IDLE;
                 end
-                else
-                    nextState = tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
+                else begin
+                    if(accessTypeLatch == `MEM_ACCESS_W)
+                        nextState = S_WRITE;
+                    else
+                        nextState = tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
+                end
             S_LOAD_BLOCK,
             S_LOAD_BLOCK_WAIT: nextState = memEnd && dbOut_ready ? S_LOAD_LAST_W : (dbOut_ready ? S_LOAD_BLOCK : S_LOAD_BLOCK_WAIT);
             S_WRITE_BACK,
@@ -178,6 +187,12 @@ module Cache #(
             S_LOAD_LAST_W: nextState = S_CHK_HIT;
             S_WRITE_LAST_W,
             S_WRITE_LAST_W_WAIT: nextState = dbOut_ready ? S_LOAD_BLOCK : S_WRITE_LAST_W_WAIT;
+            S_WRITE,
+            S_WRITE_WAIT: 
+                if(dbOut_ready)
+                    nextState = tagOut_dirty ? S_READ_FIRST_W : S_LOAD_BLOCK;
+                else
+                    nextState = S_WRITE_WAIT;
         endcase
     end
     Ram #(.WIDTH(32), .ADDR_WIDTH(BLOCK_ADDR_WIDTH + INBLOCK_ADDR_WIDTH - 2), .TAG({TAG, "/DataRam1"})) dataRam1 (
