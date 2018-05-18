@@ -26,6 +26,8 @@
 `define MMU_EXCEPTION_TLBL        5'd2
 `define MMU_EXCEPTION_TLBS        5'd3
 `define MMU_EXCEPTION_TLBMODIFIED 5'd1
+`define MMU_EXCEPTION_ADEL        5'd4
+`define MMU_EXCEPTION_ADES        5'd5
 `define MMU_EXCEPTION [4:0]
 
 `endif

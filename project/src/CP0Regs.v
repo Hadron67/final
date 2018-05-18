@@ -54,6 +54,8 @@ module CP0Regs #(
         if(res) begin
             cp0_status <= 32'd0;
             cp0_cause <= 32'd0;
+            // cp0_status <= {29'd0, 2'b11, 1'b0};
+            
         end
         else begin
             if(!isMMU && we && rd == 5'd8 || we_badVAddr) begin

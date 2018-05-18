@@ -11,7 +11,8 @@ module MMU #(
     input wire `CPU_MODE cpuMode,
     input wire [31:0] vAddr,
     output wire [31:0] pAddr,
-    output wire db_io,
+    output wire db_io, 
+    output reg cachable,
 
     input wire `MMU_REG mmu_reg,
     input wire `MEM_ACCESS mmu_accessType,
@@ -35,17 +36,21 @@ module MMU #(
     reg [31:0] vAddrLatch;
     reg prob, convert;
     reg `MEM_ACCESS accessTypeReg;
+    reg `CPU_MODE cpuModeLatch;
     wire [31:0] tlbOut_entryHi, tlbOut_entryLo0, tlbOut_entryLo1, tlbOut_pageMask, tlbOut_index;
     wire found, valid, dirty;
 
     wire writeTlb, mapped;
     wire [31:0] tlbAddrOut, randomOut;
     reg [31:0] tlbWriteIndex;
+    wire [2:0] cacheC;
+    wire addressError;
 
     assign writeTlb = mmu_cmd == `MMU_CMD_WRITE_TLB || mmu_cmd == `MMU_CMD_WRITE_TLB_RANDOM;
     assign pAddr = mapped ? tlbAddrOut : {3'b000, vAddrLatch[28:0]};
     assign mapped = vAddrLatch[31:30] != 2'b10;
     assign db_io = vAddrLatch[31:29] == 3'b101;
+    assign addressError = (cpuModeLatch == `CPU_MODE_USER) && vAddrLatch[31];
 
     always @* begin
         case(mmu_cmd)
@@ -58,15 +63,29 @@ module MMU #(
 
     always @* begin
         if(mapped)
+            case(cacheC)
+                3'd3: cachable = 1'b1;
+                3'd2: cachable = 1'b0;
+                default: cachable = 1'b0;
+            endcase
+        else
+            cachable = !db_io;
+    end
+
+    always @* begin
+        if(addressError)
+            mmu_exception = accessTypeReg == `MEM_ACCESS_W ? `MMU_EXCEPTION_ADES : `MMU_EXCEPTION_ADEL;
+        else if(mapped) begin
             if(!found || !valid)
                 if(accessTypeReg == `MEM_ACCESS_W)
                     mmu_exception = `MMU_EXCEPTION_TLBS;
                 else
                     mmu_exception = `MMU_EXCEPTION_TLBL;
             else if(dirty && accessTypeReg == `MEM_ACCESS_W)
-                mmu_exception = `MMU_EXCEPTION_TLBMODIFIED;
+                mmu_exception = `MMU_EXCEPTION_TLBMODIFIED;  
             else
                 mmu_exception = `MMU_EXCEPTION_NONE;
+        end
         else
             mmu_exception = `MMU_EXCEPTION_NONE;
     end
@@ -94,6 +113,7 @@ module MMU #(
         .found(found),
         .bitV(valid),
         .bitD(dirty),
+        .bitC(cacheC),
 
         .entryHiOut(tlbOut_entryHi),
         .entryLo0Out(tlbOut_entryLo0),
@@ -111,6 +131,7 @@ module MMU #(
             if(addrValid) begin
                 vAddrLatch <= vAddr;
                 accessTypeReg <= mmu_accessType;
+                cpuModeLatch <= cpuMode;
                 convert <= 1'b1;
             end
             else if(mmu_cmd == `MMU_CMD_PROB_TLB && !prob) begin

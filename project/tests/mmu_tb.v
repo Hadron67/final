@@ -1,4 +1,5 @@
 `include "mmu.vh"
+`include "CPU.vh"
 `timescale 1ns/1ns
 
 module mmu_tb();
@@ -16,6 +17,7 @@ module mmu_tb();
     reg `MMU_CMD mmu_cmd;
     wire [31:0] mmu_dataOut;
     wire `MMU_EXCEPTION mmu_exception;
+    reg `CPU_MODE cpuMode;
 
     task writeReg;
         input `MMU_REG mmuReg;
@@ -136,6 +138,7 @@ module mmu_tb();
         .clk(clk),
         .res(res),
         .addrValid(addrValid),
+        .cpuMode(cpuMode),
         .pAddr(pAddr),
         .vAddr(vAddr),
         .mmu_cmd(mmu_cmd),
@@ -153,6 +156,8 @@ module mmu_tb();
         reset();
         // invalidate all entries
         initTlb();
+        mmu_accessType = `MEM_ACCESS_R;
+        cpuMode = `CPU_MODE_KERNEL;
         writeEntry(1'b0, 32'd0, 19'd1, 8'd1, 16'd0, 26'd4, 3'd0, 1'd0);
         writeEntry(1'b0, 32'd1, 19'd2, 8'd1, 16'd0, 26'd20, 3'd0, 1'd0);
         writeEntry(1'b0, 32'd2, 19'd3, 8'd1, 16'd0, 26'd70, 3'd0, 1'd0);

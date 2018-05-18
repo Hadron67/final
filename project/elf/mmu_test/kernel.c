@@ -50,11 +50,19 @@ static void PageTable_init(PageTable *t){
     }
 }
 
+static void switchMode(uint32_t mode){
+    uint32_t status;
+    MFC0(status, C0_STATUS);
+    status &= ~0b11000;
+    status |= mode << 3;
+    MTC0(status, C0_STATUS);
+}
+
 static void PageTable_writeEntry(PageTable *table, uint32_t vpn2, uint8_t asid, uint32_t mask, uint32_t fpn, int even){
     PageTableEntry *entry = table->entries + vpn2;
     entry->entryHi = (vpn2 << 13) | (asid & 0xff);
     entry->pageMask = mask << 13;
-    uint32_t entryLo = (fpn << 6) | 2 | (asid == 0);
+    uint32_t entryLo = (fpn << 6) | 2 | (asid == 0) | 3 << 3;
     if(even){
         entry->entryLo0 = entryLo;
     }
@@ -66,7 +74,7 @@ static void writeTlb(uint32_t i, uint32_t vpn2, uint8_t asid, uint32_t mask, uin
     MTC0(i, C0_INDEX);
     MTC0((vpn2 << 13) | (asid & 0xff), C0_ENTRYHI);
     MTC0(mask << 13, C0_PAGEMASK);
-    uint32_t entryLo = (fpn << 6) | 2 | (asid == 0);
+    uint32_t entryLo = (fpn << 6) | 2 | (asid == 0) | 3 << 3;
     if(even){
         MTC0(entryLo, C0_ENTRYLO0);
         MTC0(0, C0_ENTRYLO1);
@@ -169,6 +177,7 @@ static void runTest(){
     printString(testAddr);
     IO_WRITE_SEG0(segDecode[3]);
     copyWords((uint32_t *)testAddr, (uint32_t *)&__test_start, (uint32_t)&__test_end - (uint32_t)&__test_start);
+    switchMode(2);// user mode
     ((runnable)testAddr)();
 }
 

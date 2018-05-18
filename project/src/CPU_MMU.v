@@ -47,7 +47,7 @@ module CPU_MMU #(
     // assign db_accessType = nextState == S_ACCESS_MEM ? db2_accessType : `MEM_ACCESS_NONE;
     assign db2_ready = ((state == S_ACCESS_MEM || state == S_ACCESS_MEM_WAIT) && db_ready && !needWriteback) || ((state == S_WRITE_BACK || state == S_WRITE_BACK_WAIT) && db_ready);
     assign needWriteback = accessTypeLatch == `MEM_ACCESS_W && (memLenLatch == `MEM_LEN_B || memLenLatch == `MEM_LEN_H);
-    assign cachable = !db_io;
+    // assign cachable = !db_io;
 
     always @* begin
         case(nextState)
@@ -150,6 +150,7 @@ module CPU_MMU #(
         .vAddr(db2_addr),
         .pAddr(db_addr),
         .db_io(db_io),
+        .cachable(cachable),
 
         .mmu_reg(mmu_reg),
         .mmu_dataIn(mmu_dataIn),

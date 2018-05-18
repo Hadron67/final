@@ -8,7 +8,8 @@ module TLB #(
     input wire [31:0] index,
     input wire re, we,
     output wire [31:0] entryHiOut, entryLo0Out, entryLo1Out, pageMaskOut, matchedIndex,
-    output wire found, bitD, bitV, bitG
+    output wire found, bitD, bitV, bitG, 
+    output wire [2:0] bitC
 );
     localparam ENTRY_COUNT = 1 << ENTRY_ADDR_WIDTH;
     reg [31:0] tlb_entryHi[ENTRY_COUNT - 1:0];
@@ -32,6 +33,7 @@ module TLB #(
     assign bitD = selectedEntryLo[2];
     assign bitV = selectedEntryLo[1];
     assign bitG = selectedEntryLo[0];
+    assign bitC = selectedEntryLo[5:3];
     assign mask = pageMaskOut[28:13];
     assign found = |matched;
 
