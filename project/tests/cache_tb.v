@@ -20,9 +20,9 @@ module DummyMem #(
     always @(posedge clk) begin
         if(db_we) begin
             {mem[addr2], mem[addr2 + 1], mem[addr2 + 2], mem[addr2 + 3]} <= db_dataOut;
-            // `ifdef DEBUG_DISPLAY
-            // $display("[Main memory]write data 0x%x to address 0x%x", db_dataOut, addr2);
-            // `endif
+            `ifdef DEBUG_DISPLAY
+            $display("[Main memory]write data 0x%x to address 0x%x", db_dataOut, addr2);
+            `endif
         end
         else if(db_re) begin
             addrLatch <= addr2;
@@ -146,10 +146,12 @@ module cache_tb();
         db_accessType = `MEM_ACCESS_NONE;
         #100;
         resetCache();
-        readMem ({24'd1, 4'd0, 4'd0});
+        // readMem ({24'd0, 4'd0, 4'd0});
+        // readMem ({24'd1, 4'd0, 4'd0});
+        writeMem({24'd0, 4'd0, 4'd0}, 32'h bad_c0de);
         writeMem({24'd1, 4'd0, 4'd0}, 32'h dead_beef);
+        readMem ({24'd2, 4'd0, 4'd0});
 
-        readMem ({24'd1, 4'd0, 4'd0});
         // writeMem({24'd0, 4'd3, 4'd4}, 32'h bad_c0de);
         // readMem ({24'd0, 4'd0, 4'd0});
         // readMem ({24'd1, 4'd0, 4'd0});
