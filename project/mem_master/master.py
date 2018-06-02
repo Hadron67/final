@@ -27,7 +27,7 @@ port.parity = serial.PARITY_NONE
 logging.basicConfig(format = ('%(levelname)s: '
                             + '[%(relativeCreated)d] '
                             + '%(message)s'),
-                    level = logging.INFO)
+                    level = logging.DEBUG)
 
 def getWord():
     return ord(port.read()) | ord(port.read()) << 8 | ord(port.read()) << 16 | ord(port.read()) << 24
